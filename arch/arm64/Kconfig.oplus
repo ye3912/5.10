@@ -1,0 +1,577 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# OPLUS (OnePlus/Oppo/Realme) vendor feature Kconfig
+# Sourced from arch/arm64/Kconfig.platforms
+#
+
+menu "OPLUS vendor features"
+	depends on OPLUS
+
+config OPLUS_SYSTEM_KERNEL_QCOM
+	bool "OPLUS Qualcomm platform kernel support"
+	default n
+	help
+	  Enable OPLUS kernel support for Qualcomm SoC platforms (SM8250 etc).
+	  This gates the drivers/soc/oplus/ build and various QCOM-specific
+	  codepaths in OPLUS vendor modules.
+
+comment "Charger & Power Management"
+
+config OPLUS_CHARGER_WIRELESS_PEN
+	bool "OPLUS wireless charger PEN support"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_CHARGER_WIRELESS_RA9530
+	bool "OPLUS wireless charger RA9530 support"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_CHECK_CHARGERID_VOLT
+	bool "OPLUS charger ID voltage detection"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_SM8250_CHARGER
+	bool "OPLUS SM8250 charger driver"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_SMART_CHARGER_SUPPORT
+	bool "OPLUS smart charger support"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_SHORT_C_BATT_CHECK
+	bool "OPLUS short circuit battery check"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_SHORT_HW_CHECK
+	bool "OPLUS short circuit hardware check"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_SHORT_IC_CHECK
+	bool "OPLUS short circuit IC check"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_SHORT_USERSPACE
+	bool "OPLUS short circuit userspace notification"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_RF_CABLE_MONITOR
+	bool "OPLUS RF cable monitor"
+	depends on OPLUS_CHG
+	default n
+
+config OPLUS_HEALTHINFO
+	bool "OPLUS health info monitor"
+	depends on OPLUS_CHG
+	default n
+
+comment "Scheduler & Memory Management"
+
+config OPLUS_CPU_AUDIO_PERF
+	bool "OPLUS CPU audio performance optimization"
+	default n
+
+config OPLUS_CPUFREQ_IOWAIT_PROTECT
+	bool "OPLUS cpufreq IO wait protection"
+	default n
+
+config OPLUS_SCHED
+	bool "OPLUS scheduler extensions"
+	default n
+
+config OPLUS_UX_IM_FLAG
+	bool "OPLUS UX IM flag support"
+	default n
+
+config OPLUS_UXMEM_OPT
+	bool "OPLUS UX memory optimization"
+	default n
+
+config OPLUS_WAKELOCK_PROFILER
+	bool "OPLUS wakelock profiler"
+	default n
+
+config OPLUS_ZRAM_OPT
+	bool "OPLUS ZRAM optimization"
+	default n
+
+config OPLUS_ION_BOOSTPOOL
+	bool "OPLUS ION boost pool"
+	default n
+
+config OPLUS_JANK_INFO
+	bool "OPLUS jank information tracking"
+	default n
+
+config OPLUS_LOCKING_MONITOR
+	bool "OPLUS locking monitor"
+	default n
+
+config OPLUS_LOCKING_OSQ
+	bool "OPLUS optimistic spin queue"
+	default n
+
+config OPLUS_LOCKING_STRATEGY
+	bool "OPLUS locking strategy"
+	default n
+
+config LOCKING_PROTECT
+	bool "OPLUS locking protect"
+	default n
+	help
+	  Protect UX tasks during mutex/rwsem contention. When enabled,
+	  UX tasks that are blocked on a lock inherit priority boosting
+	  to reduce latency. Requires CONFIG_OPLUS_FEATURE_SCHED_ASSIST.
+
+config MMAP_LOCK_OPT
+	bool "OPLUS mmap lock optimization"
+	default n
+	help
+	  Reduce sleep time in mmap_lock contention paths. Optimizes
+	  the mmap_lock for UX tasks to minimize scheduling delays.
+
+config OPLUS_MEM_MONITOR
+	bool "OPLUS memory monitor"
+	default n
+
+config OPLUS_MULTI_KSWAPD
+	bool "OPLUS multi-kswapd support"
+	default n
+
+config OPLUS_BLK_MONITOR
+	bool "OPLUS block layer monitor"
+	default n
+
+config OPLUS_BINDER_STRATEGY
+	bool "OPLUS binder IPC strategy"
+	default n
+
+config OPLUS_DYNAMIC_READAHEAD
+	bool "OPLUS dynamic readahead"
+	default n
+
+config OPLUS_CALL_MODE_SUPPORT
+	bool "OPLUS call mode support"
+	default n
+
+comment "Feature Flags (OPLUS_FEATURE_*)"
+
+config OPLUS_FEATURE_ABNORMAL_FLAG
+	bool "OPLUS abnormal flag detection"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_ACM
+	bool "OPLUS ACM (Adaptive Context Manager)"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_ACM_LOGGING
+	bool "OPLUS ACM logging"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_AUDIO_OPT
+	bool "OPLUS audio optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_BINDER_STATS_ENABLE
+	bool "OPLUS binder statistics"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_CMDLINE
+	bool "OPLUS cmdline management"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_CPU_JANKINFO
+	bool "OPLUS CPU jank information"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_DATA_EVAL
+	bool "OPLUS data evaluation"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_DATA_MODULE
+	bool "OPLUS data module"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_DNS_HOOK
+	bool "OPLUS DNS hook"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_DUMP_DEVICE_INFO
+	bool "OPLUS dump device info"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_EAS_OPT
+	bool "OPLUS EAS scheduler optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_FDLEAK_CHECK
+	bool "OPLUS file descriptor leak check"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_FEEDBACK
+	bool "OPLUS feedback mechanism"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_FRAME_BOOST
+	bool "OPLUS frame boost"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_GAME_OPT
+	bool "OPLUS game optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_HUNG_TASK_ENHANCE
+	bool "OPLUS hung task detection enhance"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_IM
+	bool "OPLUS IM (Instant Messenger) optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_KMSG_WB
+	bool "OPLUS kernel message writeback"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_LOWMEM_DBG
+	bool "OPLUS low memory debug"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_MDMFEATURE
+	bool "OPLUS modem feature interface"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_MIDAS
+	bool "OPLUS MIDAS (performance monitoring)"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_GPU_MINIDUMP
+	bool "OPLUS GPU minidump snapshot"
+	depends on OPLUS_FEATURE
+	default n
+	help
+	  Enable OPLUS extended GPU fault snapshot with hash-id
+	  tracking and per-process fault attribution.
+
+config OPLUS_BUG_STABILITY
+	bool "OPLUS GPU fault kevent notification"
+	depends on OPLUS_FEATURE
+	default n
+	help
+	  Send GPU page-fault kevents via mm_fb_kevent for
+	  bug-stability tracking and automated reporting.
+
+config OPLUS_FEATURE_VIRTUAL_RESERVE_MEMORY
+	bool "OPLUS GPU virtual reserve memory"
+	depends on OPLUS_FEATURE
+	default n
+	help
+	  Reserve GPU virtual memory pool for OPLUS performance
+	  optimisations.  Requires kgsl_reserve.h.
+
+config OPLUS_FEATURE_MM_FEEDBACK
+	bool "OPLUS memory management feedback"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_OEXT4
+	bool "OPLUS ext4 filesystem extensions"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_OF2FS
+	bool "OPLUS f2fs filesystem extensions"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_OLC
+	bool "OPLUS OLC (On-Line Charging)"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_OPROJECT
+	bool "OPLUS project identification"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_PANIC_FLUSH
+	bool "OPLUS panic flush"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_PHOENIX
+	bool "OPLUS Phoenix (recovery) subsystem"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_PHOENIX_REBOOT_SPEED
+	bool "OPLUS Phoenix reboot speed optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_PMIC_MONITOR
+	bool "OPLUS PMIC monitor"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_PROJECTINFO
+	bool "OPLUS project information"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_QCOM_MINIDUMP_ENHANCE
+	bool "OPLUS QCOM minidump enhancement"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_QCOM_PMICWD
+	bool "OPLUS QCOM PMIC watchdog"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_RECORD_MDMRST
+	bool "OPLUS modem reset recording"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_RT_INFO
+	bool "OPLUS real-time information"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SAUPWK
+	bool "OPLUS SAUPWK (suspend/resume optimization)"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SCHED_ASSIST
+	bool "OPLUS scheduler assist"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SCHED_UX_PRIORITY
+	bool "OPLUS scheduler UX priority"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SCHED_SPREAD
+	bool "OPLUS scheduler spread optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_POWER_CPUFREQ
+	bool "OPLUS cpufreq power optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_POWER_EFFICIENCY
+	bool "OPLUS power efficiency optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_EDTASK_IMPROVE
+	bool "OPLUS early detection task improvement"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SHUTDOWN_DETECT
+	bool "OPLUS shutdown detection"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SHUTDOWN_SPEED
+	bool "OPLUS shutdown speed optimization"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SIGKILL_DIAGNOSIS
+	bool "OPLUS sigkill diagnosis"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_SLABTRACE_DEBUG
+	bool "OPLUS slab allocator trace debug"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_STATS_CALC
+	bool "OPLUS statistics calculation"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_THEIA
+	bool "OPLUS THEIA (power monitoring)"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_TPD
+	bool "OPLUS TPD (touch panel driver) framework"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_TPP
+	bool "OPLUS TPP (touch panel parameter)"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_UBOOT_LOG
+	bool "OPLUS u-boot log capture"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_UID_PERF
+	bool "OPLUS UID performance tracking"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_UXIO_FIRST
+	bool "OPLUS UXIO first (IO priority)"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_VIRTUAL_NET
+	bool "OPLUS virtual network interface"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_VT_CAP
+	bool "OPLUS VT capability"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_WIFI_ROUTERBOOST
+	bool "OPLUS WiFi router boost"
+	depends on OPLUS_FEATURE
+	default n
+
+config OPLUS_FEATURE_WIFI_SLA
+	bool "OPLUS WiFi SLA (service level agreement)"
+	depends on OPLUS_FEATURE
+	default n
+
+comment "Device Hardware Support"
+
+config OPLUS_COMMON_SOFT
+	bool "OPLUS common software infrastructure"
+	default n
+
+config OPLUS_CHIP_SOC_NODE
+	bool "OPLUS chip SoC node"
+	default n
+
+config OPLUS_DEVICE_IFNO
+	bool "OPLUS device information"
+	default n
+
+config OPLUS_CTP
+	bool "OPLUS capacitive touch panel"
+	default n
+
+config OPLUS_TP_APK
+	bool "OPLUS touch panel APK interface"
+	default n
+
+config OPLUS_TRIKEY
+	bool "OPLUS tri-key (3-button) support"
+	default n
+
+config OPLUS_TRIKEY_HALL
+	bool "OPLUS tri-key hall effect sensor"
+	default n
+
+config OPLUS_TRIKEY_MAIN
+	bool "OPLUS tri-key main driver"
+	default n
+
+config OPLUS_GPIO
+	bool "OPLUS GPIO extensions"
+	default n
+
+config OPLUS_HANS
+	bool "OPLUS HANS (hardware abstraction)"
+	default n
+
+config OPLUS_FINGERPRINT
+	bool "OPLUS fingerprint framework"
+	default n
+
+config OPLUS_FINGERPRINT_GKI_DISABLE
+	bool "OPLUS fingerprint GKI disable"
+	default n
+
+config OPLUS_FINGERPRINT_GOODIX_OPTICAL
+	bool "OPLUS Goodix optical fingerprint"
+	default n
+
+config OPLUS_FINGERPRINT_JIIOV_OPTICAL
+	bool "OPLUS JIIOV optical fingerprint"
+	default n
+
+config OPLUS_FINGERPRINT_QCOM
+	bool "OPLUS Qualcomm fingerprint HAL"
+	default n
+
+config OPLUS_SECURE
+	bool "OPLUS secure framework"
+	default n
+
+config OPLUS_SECURE_COMMON
+	bool "OPLUS secure common"
+	default n
+
+config OPLUS_SECURE_QCOM
+	bool "OPLUS Qualcomm secure extensions"
+	default n
+
+config OPLUS_SENSOR_FB_QC
+	bool "OPLUS sensor feedback (Qualcomm)"
+	default n
+
+config OPLUS_SHIP_MODE_SUPPORT
+	bool "OPLUS ship mode support"
+	default n
+
+config OPLUS_FW_UPDATE
+	bool "OPLUS firmware update mechanism"
+	default n
+
+endmenu
+
+menu "OPLUS Feature Flags"
+	depends on OPLUS_FEATURE
+
+config OPLUS_FEATURE_IOMONITOR
+	bool "OPLUS IO monitor support"
+	default n
+	help
+	  Enable OPLUS IO monitor subsystem for tracking FS major faults.
+
+endmenu

@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# OPLUS (OnePlus/Oppo/Realme) SoC-specific drivers for SM8250
+# Enabled via CONFIG_OPLUS_SYSTEM_KERNEL_QCOM from arch/arm64/Kconfig.oplus
+#
+
+menu "OPLUS SoC Drivers"
+	depends on ARCH_QCOM
+
+config OPLUS_PROJECT_INFO
+	bool "OPLUS project identification (SMEM)"
+	default n
+	help
+	  Reads OnePlus project/PCB/RF/operator identifiers from Qualcomm
+	  SMEM region 135 (OCDT). Exports get_project(), get_PCB_Version(),
+	  get_Modem_Version(), get_Operator_Version() etc. and populates
+	  /proc/oplusVersion/.
+
+	  Say Y if building for OnePlus SM8250 (kona) devices.
+
+config OPLUS_DEVICE_INFO
+	bool "OPLUS device info (devinfo)"
+	default n
+	help
+	  Provides /proc/devinfo/ entries for board identification,
+	  audio mainboard matching, GPIO-based HW ID detection,
+	  UFS+ status, and DDR type reporting.
+
+	  Say Y if building for OnePlus SM8250 (kona) devices.
+
+config OPLUS_BOOT_MODE
+	bool "OPLUS boot mode detection"
+	default n
+	help
+	  Determines the device boot state (normal, recovery, charging,
+	  factory, etc.) from kernel cmdline. Exports get_boot_mode()
+	  and populates /sys/kernel/systeminfo/ftmmode.
+
+	  Say Y if building for OnePlus SM8250 (kona) devices.
+
+endmenu

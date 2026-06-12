@@ -1,0 +1,84 @@
+# SPDX-License-Identifier: GPL-2.0-only
+menu "OPLUS Charging Drivers"
+	depends on OPLUS_SYSTEM_KERNEL_QCOM
+
+config OPLUS_CHG
+	bool "OPLUS charging framework (core skeleton)"
+	depends on OPLUS_SYSTEM_KERNEL_QCOM
+	default n
+	select OPLUS_CHG_VOTER
+	select OPLUS_CHG_OPS_MANAGER
+	select OPLUS_CHG_COMM
+	select OPLUS_CHG_CONFIGFS
+	select OPLUS_CHG_DEBUG
+	help
+	  Master switch for the OPLUS charging framework.
+	  Enables the core skeleton: voter, ops_manager, comm,
+	  configfs, and debug_info stubs.
+	  IC drivers (charger/gauge/VOOC/wireless) added in Phase 3.
+
+config OPLUS_CHG_CORE
+	bool "OPLUS charging core stubs (gauge/FFC/VOOC)"
+	depends on OPLUS_CHG
+	default n
+	help
+	  Provides oplus_gauge_init(), oplus_chg_get_ffc_status(),
+	  and oplus_vooc_get_fastchg_ing() with safe defaults.
+
+config OPLUS_CHARGER
+	tristate "OPLUS charger minimal wired path"
+	depends on OPLUS_CHG_CORE
+	default n
+	help
+	  Minimal Layer 3A charger state machine for wired charging.
+	  Provides oplus_chg_init(), minimal DT parsing, periodic
+	  update_work, and the basic P0 charger-ops path.
+
+config OPLUS_CHG_VOTER
+	tristate "OPLUS charger voter framework"
+	depends on OPLUS_CHG
+	default m
+	help
+	  Vote-based parameter arbitration framework used by
+	  the charging stack.  Each client creates named votes
+	  within a voter domain; the framework re-evaluates
+	  and selects the effective value (MIN/MAX/SET_ANY).
+
+config OPLUS_CHG_OPS_MANAGER
+	tristate "OPLUS charger operations manager"
+	depends on OPLUS_CHG
+	default m
+	help
+	  Linked-list registry for struct oplus_chg_operations.
+	  Charger-IC drivers register their hardware ops table
+	  at probe time.  The framework picks the active instance
+	  via oplus_chg_ops_get().
+
+config OPLUS_CHG_COMM
+	tristate "OPLUS charger communication (stub)"
+	depends on OPLUS_CHG
+	default m
+	help
+	  Stub for the OPLUS charger IPC framework (UART/SPI).
+	  Full implementation deferred to Phase 3.
+
+config OPLUS_CHG_CONFIGFS
+	tristate "OPLUS charger configfs (stub)"
+	depends on OPLUS_CHG
+	default m
+	help
+	  Stub for OPLUS charger configuration via configfs.
+	  Full implementation deferred to Phase 3.
+
+config OPLUS_CHG_DEBUG
+	tristate "OPLUS charger debug info (stub)"
+	depends on OPLUS_CHG
+	default m
+	help
+	  Stub for OPLUS charger debug/track infrastructure.
+	  Full implementation deferred to Phase 3.
+
+source "drivers/power/oplus/charger_ic/Kconfig"
+source "drivers/power/oplus/gauge_ic/Kconfig"
+
+endmenu

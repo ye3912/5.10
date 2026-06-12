@@ -1,0 +1,335 @@
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_KERNEL_LZ4=y
+CONFIG_CMDLINE="earlycon=qcom,geni-debug-uart,0xa90000 console=tty0 console=ttyMSM0,115200n8 ignore_loglevel log_buf_len=1M androidboot.console=ttyMSM0 androidboot.hardware=qcom androidboot.memcg=1 lpm_levels.sleep_disabled=1 video=vfb:640x400,bpp=32,memsize=3072000 msm_rtb.filter=0x237 service_locator.enable=1 androidboot.usbcontroller=a800000.dwc3 swiotlb=2048 loop.max_part=7 cgroup.memory=nokmem,nosocket"
+CONFIG_CMDLINE_EXTEND=y
+CONFIG_ANDROID=y
+CONFIG_ANDROID_BINDER_IPC=y
+CONFIG_ANDROID_BINDERFS=y
+CONFIG_ANDROID_VENDOR_HOOKS=y
+
+# Android userspace baseline: init, SELinux, cgroups, sockets, adb FunctionFS.
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_RD_GZIP=y
+CONFIG_RD_LZ4=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_LOOP_MIN_COUNT=16
+CONFIG_SECCOMP=y
+CONFIG_CGROUPS=y
+CONFIG_MEMCG=y
+CONFIG_MEMCG_SWAP=y
+CONFIG_CGROUP_SCHED=y
+CONFIG_CPUSETS=y
+CONFIG_CGROUP_BPF=y
+CONFIG_NAMESPACES=y
+# CONFIG_PID_NS is not set
+CONFIG_BPF_SYSCALL=y
+CONFIG_NET=y
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+CONFIG_AUDIT=y
+CONFIG_SECURITY=y
+CONFIG_SECURITYFS=y
+CONFIG_SECURITY_NETWORK=y
+CONFIG_SECURITY_SELINUX=y
+CONFIG_STAGING=y
+CONFIG_ASHMEM=y
+CONFIG_DMABUF_HEAPS=y
+CONFIG_DMABUF_HEAPS_DEFERRED_FREE=y
+CONFIG_DMABUF_HEAPS_PAGE_POOL=y
+
+CONFIG_ARCH_QCOM=y
+CONFIG_ARCH_SM8250=y
+CONFIG_LOCALVERSION="-lineageos"
+CONFIG_BUILD_ARM64_DT_OVERLAY=y
+
+# Kona (SM8250) SoC
+CONFIG_ARCH_KONA=y
+
+# DT overlay support for OnePlus 8 Pro (shared SoC config)
+CONFIG_MACH_ONEPLUS8PRO=y
+
+# OnePlus specific drivers
+CONFIG_OPLUS=y
+CONFIG_OPLUS_FEATURE=y
+CONFIG_OPLUS_CHG=y
+CONFIG_OPLUS_SYSTEM=y
+
+# GCC - Global Clock Controller
+CONFIG_SM_GCC_8250=y
+
+# CAMCC - Camera Clock Controller
+CONFIG_SM_CAMCC_8250=y
+
+# DISPCC - Display Clock Controller
+CONFIG_SM_DISPCC_8250=y
+
+# GPUCC - GPU Clock Controller
+CONFIG_SM_GPUCC_8250=y
+
+# VIDEOCC - Video Clock Controller
+CONFIG_SM_VIDEOCC_8250=y
+
+# NPUCC - NPU Clock Controller
+CONFIG_SM_NPUCC_8250=y
+
+# Interconnect
+CONFIG_INTERCONNECT_QCOM=y
+CONFIG_INTERCONNECT_QCOM_SM8250=y
+
+# RPMH
+CONFIG_QCOM_RPMH=y
+CONFIG_QCOM_RPMHPD=y
+
+# AOSS
+CONFIG_QCOM_AOSS_QMP=y
+
+# RPMH Clock — provides clocks to downstream consumers via RPMh
+CONFIG_QCOM_CLK_RPMH=y
+
+# IOMMU / SMMU — REQUIRED for DMA peripherals on SM8250
+CONFIG_ARM_SMMU=y
+CONFIG_QCOM_IOMMU=y
+CONFIG_QCOM_IOMMU_UTIL=y
+
+# Mailbox / IPCC — inter-processor communication
+CONFIG_MAILBOX=y
+CONFIG_QCOM_IPCC=y
+
+# PDC — wake-up capable interrupt controller
+CONFIG_QCOM_PDC=y
+
+# GLINK / QMI — Qualcomm IPC protocol (apps↔modem/ADSP)
+CONFIG_QCOM_GLINK=y
+CONFIG_QCOM_QMI_HELPERS=y
+
+# CPUFreq
+CONFIG_ARM_QCOM_CPUFREQ_HW=y
+
+# GPU — KGSL (downstream Adreno driver, owns GPU hardware per kona-gpu.dtsi)
+# NVMEM is parent for QCOM_QFPROM; QCOM_QFPROM is parent for QCOM_KGSL.
+# SYNC_FILE selects DMA_SHARED_BUFFER (needed for kgsl fence/dmabuf paths).
+# DRM_MSM is NOT enabled: DTS disables upstream &gpu/&gmu to avoid conflict.
+CONFIG_NVMEM=y
+CONFIG_QCOM_QFPROM=y
+CONFIG_QCOM_KGSL=y
+CONFIG_SYNC_FILE=y
+CONFIG_DMA_SHARED_BUFFER=y
+
+# PHY — QMP for UFS/PCIe/USB (must be built-in, no modules available)
+CONFIG_PHY_QCOM_QMP=y
+CONFIG_PHY_QCOM_UFS=y
+
+# Power reset
+CONFIG_POWER_RESET_QCOM_PON=y
+CONFIG_POWER_RESET_QCOM_DOWNLOAD_MODE=y
+CONFIG_POWER_RESET_QCOM_DOWNLOAD_MODE_DEFAULT=y
+CONFIG_POWER_RESET_QCOM_REBOOT_REASON=y
+
+# Essential features
+CONFIG_QCOM_CPR=y
+CONFIG_QCOM_LLCC=y
+CONFIG_QCOM_MDT_LOADER=y
+CONFIG_QCOM_SMEM=y
+CONFIG_QCOM_SMP2P=y
+CONFIG_QCOM_SMSM=y
+CONFIG_QCOM_SOCINFO=y
+
+# UFS — full dependency chain (kbuild silently drops leaf configs
+# whose depends-on parents are not also explicitly set)
+CONFIG_SCSI=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_SCSI_UFSHCD=y
+CONFIG_SCSI_UFSHCD_PLATFORM=y
+CONFIG_SCSI_UFS_QCOM=y
+CONFIG_BLK_INLINE_ENCRYPTION=y
+CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK=y
+CONFIG_SCSI_UFS_CRYPTO=y
+CONFIG_SCSI_UFS_CRYPTO_QTI=y
+
+# FBE (File-Based Encryption) — ColorOS /data is F2FS+FBE
+# CONFIG_MD is the parent menuconfig for BLK_DEV_DM; without it,
+# kbuild silently drops BLK_DEV_DM, DM_CRYPT, DM_VERITY, etc.
+CONFIG_MD=y
+CONFIG_BLK_DEV_DM=y
+CONFIG_FS_ENCRYPTION=y
+CONFIG_FS_ENCRYPTION_INLINE_CRYPT=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_SNAPSHOT=y
+CONFIG_DM_VERITY=y
+CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG=y
+CONFIG_DM_VERITY_FEC=y
+CONFIG_DM_DEFAULT_KEY=y
+CONFIG_DM_BOW=y
+
+# Android first-stage mount crypto: FBE, metadata encryption, and verity.
+CONFIG_ARM64_CRYPTO=y
+CONFIG_CRYPTO_SHA2_ARM64_CE=y
+CONFIG_CRYPTO_AES_ARM64_CE_BLK=y
+CONFIG_CRYPTO_CHACHA20POLY1305=y
+CONFIG_CRYPTO_ADIANTUM=y
+CONFIG_QTI_CRYPTO_COMMON=y
+CONFIG_QTI_CRYPTO_TZ=y
+
+# USB
+# CONFIG_USB is for host mode — not set to keep size minimal
+CONFIG_USB_GADGET=y
+CONFIG_USB_CONFIGFS=y
+CONFIG_USB_CONFIGFS_UEVENT=y
+CONFIG_USB_CONFIGFS_F_FS=y
+CONFIG_USB_DWC3=y
+CONFIG_USB_DWC3_GADGET=y
+CONFIG_USB_DWC3_QCOM=y
+CONFIG_USB_DWC3_MSM=y
+CONFIG_MSM_HSUSB_PHY=y
+CONFIG_USB_MSM_SSPHY_QMP=y
+CONFIG_EXTCON=y
+CONFIG_EXTCON_USB_GPIO=y
+
+# TypeC — required by qpnp-smb5.c (typec_register_port) and smb5-lib.c
+CONFIG_TYPEC=y
+CONFIG_USB_ROLE_SWITCH=y
+
+# PMIC
+# CONFIG_SPMI is the parent menuconfig for MFD_SPMI_PMIC; without it,
+# kbuild silently drops MFD_SPMI_PMIC, QPNP_SMB5, RTC_DRV_PM8XXX, etc.
+CONFIG_SPMI=y
+CONFIG_MFD_SPMI_PMIC=y
+CONFIG_REGULATOR_QCOM_RPMH=y
+CONFIG_REGULATOR_QCOM_SPMI=y
+
+# Pinctrl
+CONFIG_PINCTRL_SM8250=y
+
+# Thermal
+CONFIG_QCOM_TSENS=y
+CONFIG_CPU_THERMAL=y
+
+# Debug / power
+CONFIG_DEBUG_FS=y
+
+# Framebuffer console — show boot logs on screen
+CONFIG_FRAMEBUFFER_CONSOLE=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+
+# ──────────────────────────────────────────
+# OPLUS ported subsystems (Phase 1A-3)
+# ──────────────────────────────────────────
+
+# soc/oplus: project/device/boot identification
+CONFIG_OPLUS_SYSTEM_KERNEL_QCOM=y
+CONFIG_OPLUS_PROJECT_INFO=y
+CONFIG_OPLUS_DEVICE_INFO=y
+CONFIG_OPLUS_BOOT_MODE=y
+
+# power/oplus: charging core stubs
+CONFIG_OPLUS_CHG_CORE=y
+
+# power/oplus: active I2C gauge on both OnePlus SM8250 boards
+CONFIG_OPLUS_GAUGE_IC_BQ27541=y
+# CONFIG_OPLUS_CHARGER_IC_MP2650 is not set
+# CONFIG_OPLUS_CHARGER_IC_DA9313 is not set
+
+# power/oplus: minimal wired charging state machine
+CONFIG_OPLUS_CHARGER=y
+
+# power/supply: dependency closure for QCOM SMB5 and BQ27541 gauge
+CONFIG_QCOM_POWER_SUPPLY=y
+CONFIG_I2C=y
+
+# power/supply/qcom: SMB5 charger driver (required by Kona adapter)
+CONFIG_QPNP_SMB5=y
+
+# power/supply/qcom: OPLUS Kona SMB5 adapter (smb5_chg_ops → oplus_chg_operations)
+CONFIG_OPLUS_CHARGER_IC_KONA=y
+
+# rtc: PMIC RTC — SMB5 hard-requires alarmtimer_get_rtcdev() != NULL
+# (qpnp-smb5.c:3065-3069 returns -EPROBE_DEFER if RTC absent)
+# CONFIG_RTC_CLASS is the parent menuconfig for RTC_DRV_PM8XXX.
+CONFIG_RTC_CLASS=y
+CONFIG_RTC_DRV_PM8XXX=y
+
+# sched/locking: DISABLED — requires struct mutex/task_struct modifications
+# (ux_dep_task, ux_depth, ux_state) that violate GKI KMI. Re-enable after
+# vendor_hook-based redesign.
+# CONFIG_OPLUS_LOCKING_STRATEGY is not set
+
+# QCOM SMEM dependency (for oplus_project/device_info SMEM access)
+CONFIG_HWSPINLOCK=y
+CONFIG_HWSPINLOCK_QCOM=y
+
+# CRITICAL: Force QCOM_SCM=y — this is a dependency gate.
+# PINCTRL_SM8250, ARM_SMMU, QCOM_PDC (and 20+ others) use the kbuild
+# tautology pattern "depends on QCOM_SCM || !QCOM_SCM". In kbuild
+# tristate logic: !m=n, m||n=m — so when QCOM_SCM=m the pattern caps
+# all these symbols to =m, EVEN if defconfig says =y.
+# Built-in pinctrl/UFS/SMMU are REQUIRED for boot (no vendor modules
+# for 5.10 on ColorOS 4.19 vendor_boot).
+CONFIG_QCOM_SCM=y
+
+# QCOM_COMMAND_DB has same kbuild tautology pattern:
+# "depends on QCOM_COMMAND_DB || !QCOM_COMMAND_DB"
+CONFIG_QCOM_COMMAND_DB=y
+
+# IIO framework (for oplus device_info IIO channel reads)
+CONFIG_IIO=y
+
+# KGSL: GPU stability fix (kevent panic prevention)
+CONFIG_OPLUS_BUG_STABILITY=y
+
+# ──────────────────────────────────────────
+# Filesystem: MUST be built-in for boot
+# ──────────────────────────────────────────
+
+# F2FS — /data partition (ColorOS uses F2FS)
+CONFIG_F2FS_FS=y
+CONFIG_F2FS_FS_SECURITY=y
+CONFIG_F2FS_FS_COMPRESSION=y
+CONFIG_QUOTA=y
+CONFIG_QFMT_V2=y
+CONFIG_EROFS_FS=y
+CONFIG_EROFS_FS_PCPU_KTHREAD=y
+CONFIG_EROFS_FS_PCPU_KTHREAD_HIPRI=y
+CONFIG_MSDOS_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_ISO8859_1=y
+
+# EXT4 — /vendor, /system, /persist partitions
+CONFIG_EXT4_FS=y
+
+# Overlay FS — magic mount / overlay partitions
+CONFIG_OVERLAY_FS=y
+
+# Module support — enables loading vendor .ko files
+CONFIG_MODULES=y
+
+# ──────────────────────────────────────────
+# Debug / crash logging
+# ──────────────────────────────────────────
+
+# GENI serial: full driver selects SERIAL_CORE (kbuild hard mechanism)
+# — defconfig CONFIG_SERIAL_CORE=y is silently ignored by kbuild;
+#   SERIAL_QCOM_GENI has 'select SERIAL_CORE' which forces it.
+CONFIG_QCOM_GENI_SE=y
+CONFIG_SERIAL_QCOM_GENI=y
+CONFIG_SERIAL_MSM_GENI_EARLY_CONSOLE=y
+
+# PSTORE / ramoops — preserve kernel log across crash+reboot
+# Needs DTS reserved-memory node ramoops@B0000000 (see sm8250-oneplus8t.dts)
+CONFIG_PSTORE=y
+CONFIG_PSTORE_CONSOLE=y
+CONFIG_PSTORE_PMSG=y
+CONFIG_PSTORE_RAM=y
+
+# OPLUS logbuf — preserve printk to reserved-memory across warm reset
+# Needs DTS reserved-memory node oplus,logbuf (see sm8250-oneplus8t.dts)
+CONFIG_OPLUS_LOGBUF=y
+
+# Printk enhancements
+CONFIG_PRINTK_TIME=y
+CONFIG_PRINTK_CALLER=y
+CONFIG_DYNAMIC_DEBUG_CORE=y
+CONFIG_IPC_LOGGING=y
+CONFIG_FTRACE=y

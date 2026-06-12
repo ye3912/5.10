@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config OPLUS_GAUGE_IC_BQ27541
+	tristate "OPLUS BQ27541 fuel gauge"
+	depends on OPLUS_CHG_CORE && I2C
+	default n
+	help
+	  I2C driver for TI BQ27541 battery fuel gauge.

@@ -1,0 +1,227 @@
+name: Build SM8250 Kernel + AnyKernel3
+
+on:
+  push:
+    branches: [main, master, kernel.lnx.5.10.r2-rel]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - defconfig: sm8250-oneplus8t_defconfig
+            device: OnePlus8T
+            dtb: sm8250-oneplus8t.dtb
+          - defconfig: sm8250-oneplus8pro_defconfig
+            device: OnePlus8Pro
+            dtb: sm8250-oneplus8pro.dtb
+
+    steps:
+      - name: Checkout kernel source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-aarch64-linux-gnu libssl-dev flex bison bc
+
+      - name: Fix script permissions
+        run: |
+          find . -name '*.sh' -o -name '*.pl' | xargs chmod +x 2>/dev/null
+          chmod +x scripts/config 2>/dev/null; echo done
+
+      - name: Fix broken symlinks (DTC include-prefixes)
+        run: |
+          cd scripts/dtc/include-prefixes
+          for d in arc arm arm64 c6x dt-bindings h8300 microblaze mips \
+                   nios2 openrisc powerpc riscv sh sparc x86 xtensa; do
+            [ -f "$d" ] && target=$(cat "$d") && rm -f "$d" && ln -s "$target" "$d"
+          done
+          cd "${GITHUB_WORKSPACE:-.}"
+          find include/dt-bindings -type f -size -200c | while read f; do
+            target=$(cat "$f" 2>/dev/null)
+            case "$target" in
+              ../../*|../*) rm -f "$f" && ln -s "$target" "$f" ;;
+            esac
+          done
+
+      - name: Generate defconfig (${{ matrix.device }})
+        run: |
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          make ${{ matrix.defconfig }}
+
+      - name: Verify critical boot configs (${{ matrix.device }})
+        if: matrix.device == 'OnePlus8T'
+        run: |
+          echo "=== Critical boot config check ==="
+          fail=0
+          for cfg in \
+            CONFIG_SCSI=y \
+            CONFIG_SCSI_UFSHCD=y \
+            CONFIG_SCSI_UFSHCD_PLATFORM=y \
+            CONFIG_SCSI_UFS_QCOM=y \
+            CONFIG_PHY_QCOM_QMP=y \
+            CONFIG_PHY_QCOM_UFS=y \
+            CONFIG_QCOM_SCM=y \
+            CONFIG_QCOM_COMMAND_DB=y \
+            CONFIG_FS_ENCRYPTION=y \
+            CONFIG_EXT4_FS=y \
+            CONFIG_F2FS_FS=y \
+            CONFIG_PSTORE=y \
+            CONFIG_PSTORE_CONSOLE=y \
+            CONFIG_PSTORE_RAM=y \
+            CONFIG_SERIAL_QCOM_GENI=y \
+            CONFIG_SERIAL_MSM_GENI_EARLY_CONSOLE=y \
+            CONFIG_MD=y \
+            CONFIG_BLK_DEV_DM=y \
+            CONFIG_DM_CRYPT=y \
+            CONFIG_DM_VERITY=y \
+            CONFIG_SPMI=y \
+            CONFIG_MFD_SPMI_PMIC=y \
+            CONFIG_QPNP_SMB5=y \
+            CONFIG_OPLUS_CHARGER_IC_KONA=y \
+            CONFIG_RTC_CLASS=y \
+            CONFIG_RTC_DRV_PM8XXX=y \
+            CONFIG_NVMEM=y \
+            CONFIG_QCOM_QFPROM=y \
+            CONFIG_QCOM_KGSL=y \
+            CONFIG_SYNC_FILE=y \
+            CONFIG_DMA_SHARED_BUFFER=y \
+            CONFIG_TYPEC=y \
+            CONFIG_USB_ROLE_SWITCH=y \
+            CONFIG_OPLUS_LOGBUF=y \
+          ; do
+            key="${cfg%%=*}"
+            if ! grep -q "^${cfg}$" .config && ! grep -q "^${key}=y$" .config; then
+              echo "MISSING: $cfg"
+              fail=1
+            else
+              echo "  OK: $cfg"
+            fi
+          done
+          if [ "$fail" = "1" ]; then
+            echo ""
+            echo "=== FATAL: One or more critical boot configs are missing ==="
+            echo "=== Dumping relevant .config lines for diagnosis ==="
+            grep -E 'CONFIG_MD=|CONFIG_SPMI=|CONFIG_NVMEM=|CONFIG_DRM=|CONFIG_BLOCK=' .config || true
+            grep -E '# CONFIG_MD is not set|# CONFIG_SPMI is not set|# CONFIG_NVMEM is not set|# CONFIG_DRM is not set' .config || true
+            exit 1
+          fi
+          echo "=== All critical boot configs present ==="
+
+      - name: Build kernel (${{ matrix.device }})
+        run: |
+          export ARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          # Build Image.gz first.
+          make -j$(nproc) Image.gz
+          # Build all DTBs + DTBOs, use -k to skip upstream RB5 clock_rpmh breakage.
+          make -j$(nproc) dtbs -k 2>&1 | tee build.log || true
+          # Verify our base DTB and device DTBO were built.
+          test -f arch/arm64/boot/dts/qcom/${{ matrix.dtb }}
+          test -f arch/arm64/boot/dts/oplus/kona-kebab.dtbo
+
+      - name: Clone AnyKernel3
+        run: |
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git /tmp/anykernel3
+          rm -rf /tmp/anykernel3/.git
+          cat > /tmp/anykernel3/anykernel.sh << 'AKSH'
+          ### AnyKernel3 Ramdisk Mod Script
+          ## osm0sis @ xda-developers
+          ## OnePlus 8/8 Pro/8T (SM8250 / kona)
+
+          properties() { '
+           kernel.string=SM8250-Kona-OnePlus8 by ye3912
+           do.devicecheck=1
+           do.modules=0
+           do.systemless=1
+           do.cleanup=1
+           do.cleanuponabort=1
+           device.name1=OnePlus8Pro
+           device.name2=instantnoodlep
+           device.name3=OnePlus8T
+           device.name4=kebab
+           device.name5=OnePlus8
+           supported.versions=
+           supported.patchlevels=
+          '; }
+
+          block=/dev/block/by-name/boot;
+          is_slot_device=1;
+          ramdisk_compression=auto;
+          dtbo_block=/dev/block/by-name/dtbo;
+
+          . tools/ak3-core.sh;
+
+          dump_boot;
+          write_boot;
+          flash_dtbo;
+          AKSH
+
+      - name: Package with AnyKernel3
+        run: |
+          AK3=/tmp/anykernel3
+          # Kernel + DTB
+          cp arch/arm64/boot/Image.gz "$AK3/"
+          # Create a real Android DT table image. Do not rename raw .dtb
+          # to dtb.img. ABL expects dtb.img layout, not a source filename.
+          python3 scripts/mkdtboimg.py create \
+            "$AK3/dtb.img" \
+            arch/arm64/boot/dts/qcom/${{ matrix.dtb }}
+          # DTBO — auto-flashed to dtbo partition by AnyKernel3
+          python3 scripts/mkdtboimg.py create \
+            "$AK3/dtbo.img" \
+            arch/arm64/boot/dts/oplus/kona-kebab.dtbo
+          python3 - <<'PY'
+          import struct
+          from pathlib import Path
+
+          for image in (Path("/tmp/anykernel3/dtb.img"), Path("/tmp/anykernel3/dtbo.img")):
+              data = image.read_bytes()
+              header = struct.unpack(">8I", data[:32])
+              magic, total_size, header_size, entry_size, entry_count, entries_offset, page_size, version = header
+              assert magic == 0xD7B7AB1E, f"{image}: bad magic {magic:#x}"
+              assert header_size == 32, f"{image}: bad header_size {header_size}"
+              assert entry_size == 32, f"{image}: bad entry_size {entry_size}"
+              assert entries_offset == 32, f"{image}: bad entries_offset {entries_offset}"
+              assert entry_count >= 1, f"{image}: empty DT table"
+              assert page_size == 4096, f"{image}: bad page_size {page_size}"
+              assert version == 0, f"{image}: bad version {version}"
+              assert total_size == len(data), f"{image}: size mismatch"
+              metadata_end = header_size + entry_count * entry_size
+              for i in range(entry_count):
+                  off = header_size + i * entry_size
+                  dt_size, dt_offset = struct.unpack(">II", data[off:off+8])
+                  assert dt_offset >= metadata_end, f"{image}: entry[{i}] dt_offset {dt_offset} overlaps metadata"
+                  assert dt_offset + dt_size <= total_size, f"{image}: entry[{i}] overflows image"
+          PY
+          cd "$AK3" && zip -r9 /tmp/SM8250-Kona-${{ matrix.device }}-AnyKernel3.zip ./*
+
+      - name: Upload build diagnostics (${{ matrix.device }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diagnostics-${{ matrix.device }}
+          path: |
+            .config
+            build.log
+            arch/arm64/boot/dts/qcom/${{ matrix.dtb }}
+            arch/arm64/boot/dts/oplus/kona-kebab.dtbo
+          retention-days: 30
+
+      - name: Upload AnyKernel3 zip
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: SM8250-Kona-${{ matrix.device }}-AnyKernel3
+          path: |
+            /tmp/SM8250-Kona-${{ matrix.device }}-AnyKernel3.zip
+          retention-days: 30

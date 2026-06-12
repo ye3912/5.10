@@ -1,0 +1,254 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * OnePlus 8T (kebab) - SM8250 Device Tree
+ * Migrated from kona-mtp.dtsi (4.19 downstream vendor/19811)
+ */
+
+/dts-v1/;
+
+#include "sm8250.dtsi"
+#include "kona-port.dtsi"
+#include "pm8150.dtsi"
+#include "pm8150b.dtsi"
+#include "pm8150l.dtsi"
+#include "pm8009.dtsi"
+
+/ {
+	aliases {
+		serial0 = &uart12;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	vendor_node: vendor_node {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		compatible = "simple-bus";
+	};
+
+	reserved_memory: reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		reserved_xbl_uefi_log: res_xbl_uefi_log_region@80880000 {
+			no-map;
+			reg = <0x0 0x80880000 0x0 0x14000>;
+		};
+
+		pil_camera_mem: pil_camera_region@86200000 {
+			no-map;
+			reg = <0x0 0x86200000 0x0 0x500000>;
+		};
+
+		pil_wlan_fw_mem: pil_wlan_fw_region@86700000 {
+			no-map;
+			reg = <0x0 0x86700000 0x0 0x100000>;
+		};
+
+		pil_ipa_fw_mem: pil_ipa_fw_region@86800000 {
+			no-map;
+			reg = <0x0 0x86800000 0x0 0x10000>;
+		};
+
+		pil_ipa_gsi_mem: pil_ipa_gsi_region@86810000 {
+			no-map;
+			reg = <0x0 0x86810000 0x0 0xa000>;
+		};
+
+		pil_gpu_mem: pil_gpu_region@8681a000 {
+			no-map;
+			reg = <0x0 0x8681a000 0x0 0x2000>;
+		};
+
+		pil_npu_mem: pil_npu_region@86900000 {
+			no-map;
+			reg = <0x0 0x86900000 0x0 0x500000>;
+		};
+
+		pil_video_mem: pil_video_region@86e00000 {
+			no-map;
+			reg = <0x0 0x86e00000 0x0 0x500000>;
+		};
+
+		pil_cvp_mem: pil_cvp_region@87300000 {
+			no-map;
+			reg = <0x0 0x87300000 0x0 0x500000>;
+		};
+
+		pil_cdsp_mem: pil_cdsp_region@87800000 {
+			no-map;
+			reg = <0x0 0x87800000 0x0 0x1400000>;
+		};
+
+		pil_slpi_mem: pil_slpi_region@88c00000 {
+			no-map;
+			reg = <0x0 0x88c00000 0x0 0x1500000>;
+		};
+
+		pil_adsp_mem: pil_adsp_region@8a100000 {
+			no-map;
+			reg = <0x0 0x8a100000 0x0 0x1d00000>;
+		};
+
+		pil_spss_mem: pil_spss_region@8be00000 {
+			no-map;
+			reg = <0x0 0x8be00000 0x0 0x100000>;
+		};
+
+		sdsp_mem: sdsp_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x800000>;
+		};
+
+		cont_splash_memory: cont_splash_region@9c000000 {
+			reg = <0x0 0x9c000000 0x0 0x02300000>;
+			label = "cont_splash_region";
+		};
+
+		dfps_data_memory: dfps_data_region@9e300000 {
+			reg = <0x0 0x9e300000 0x0 0x0100000>;
+			label = "dfps_data_region";
+		};
+
+		dump_mem: mem_dump_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			size = <0 0x2800000>;
+		};
+
+		sp_mem: sp_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x1000000>;
+		};
+
+		user_contig_mem: user_contig_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x1000000>;
+		};
+
+		qseecom_mem: qseecom_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x1400000>;
+		};
+
+		qseecom_ta_mem: qseecom_ta_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x1000000>;
+		};
+
+		secure_display_memory: secure_display_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0xA400000>;
+		};
+
+		cnss_wlan_mem: cnss_wlan_region {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x1400000>;
+		};
+
+		linux,cma {
+			compatible = "shared-dma-pool";
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			reusable;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x2000000>;
+			linux,cma-default;
+		};
+
+		mailbox_mem: mailbox_region {
+			compatible = "shared-dma-pool";
+			no-map;
+			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
+			alignment = <0x0 0x400000>;
+			size = <0x0 0x20000>;
+		};
+
+		ramoops@B0000000 {
+			compatible = "ramoops";
+			reg = <0x0 0xB0000000 0x0 0x00400000>;
+			record-size = <0x40000>;
+			console-size = <0x40000>;
+			ftrace-size = <0x40000>;
+			pmsg-size = <0x200000>;
+		};
+
+		oplus_logbuf_mem: logbuf@B0400000 {
+			compatible = "oplus,logbuf";
+			reg = <0x0 0xB0400000 0x0 0x400000>;
+			no-map;
+		};
+	};
+};
+
+&{/firmware} {
+	android {
+		vbmeta {
+			parts = "vbmeta,boot,system,vendor,dtbo,recovery";
+		};
+
+		fstab {
+			vendor {
+				fsmgr_flags = "wait,avb";
+			};
+		};
+	};
+};
+
+/ {
+	model = "Qualcomm Technologies, Inc. kona MTP 19805 20809";
+	compatible = "oneplus,kebab", "qcom,kona-mtp", "qcom,kona", "qcom,mtp", "qcom,sm8250";
+
+	/*
+	 * ABL bootloader contract for OnePlus 8T (kebab).
+	 *
+	 * Board-id <0x10008 0> matches the 4.19 kona-kebab-overlay.dts.
+	 * msm-id covers kona / kona-v2 / kona-v2.1 base DTB variants.
+	 *
+	 * Device-specific hardware is in the DTBO overlay
+	 * (arch/arm64/boot/dts/oplus/kona-kebab.dts).
+	 */
+	qcom,board-id = <0x10008 0>;
+	qcom,msm-id = <0x164 0x10000>, <0x164 0x20000>, <0x164 0x20001>;
+	oplus,dtsi_no = <19805 20809>;
+	oplus,pcb_range = <0 56>;
+};
+
+/*
+ * Disable upstream DRM/MSM Adreno GPU and GMU nodes.  The KGSL
+ * stack (kona-gpu.dtsi msm_gpu) owns the 0x03d00000 GPU hardware;
+ * keeping both active would cause a duplicate-address conflict and
+ * let DRM/MSM Adreno race KGSL for the same device.
+ */
+&gpu {
+	status = "disabled";
+};
+
+&gmu {
+	status = "disabled";
+};

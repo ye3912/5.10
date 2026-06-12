@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config OPLUS_CHARGER_IC_MP2650
+	tristate "OPLUS MP2650 charger IC"
+	depends on OPLUS_CHG_OPS_MANAGER && I2C
+	default n
+	help
+	  I2C driver for MPS MP2650 buck charger.
+	  Registers with oplus_chg_ops_manager.
+
+config OPLUS_CHARGER_IC_DA9313
+	tristate "OPLUS DA9313 charge pump / divider"
+	depends on OPLUS_CHG && I2C
+	default n
+	help
+	  I2C driver for Dialog DA9313 / SD77313 charge pump.

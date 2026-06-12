@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * OnePlus 8T (kebab) — Full DTBO overlay for ABL board-id matching
+ *
+ * This overlay carries ALL device-specific hardware (touchscreen, fingerprint,
+ * charging, display panels, audio, thermal, sensors, NFC, Bluetooth, UFS,
+ * WiFi, haptics, battery data) from 5.10's existing DTS infrastructure.
+ *
+ * ABL boot flow:
+ *   1. Match base DTB  by msm-id    → sm8250-oneplus8t.dtb (SoC skeleton)
+ *   2. Match DTBO      by board-id  → this file (device flesh)
+ *   3. Merge and pass merged tree to kernel
+ */
+/dts-v1/;
+/plugin/;
+
+/* 5.10 existing device hardware — all &label references become
+ * __fixups__ resolved at overlay-application time against the
+ * base DTB's SoC-level labels (sm8250.dtsi + kona-port.dtsi).
+ */
+#include "../qcom/sm8250-oneplus8t-mtp.dts"
+
+/* ABL board-id matching metadata */
+/ {
+	model = "Qualcomm Technologies, Inc. kona MTP 19805 20809";
+	compatible = "qcom,kona-mtp", "qcom,kona", "qcom,mtp", "qcom,sm8250";
+
+	qcom,board-id = <0x10008 0>;
+	oplus,dtsi_no = <19805 20809>;
+	oplus,pcb_range = <0 56>;
+};

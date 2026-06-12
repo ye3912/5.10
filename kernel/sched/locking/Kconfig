@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0
+# OPLUS locking strategy subsystem
+#
+# Config entries defined in arch/arm64/Kconfig.oplus:
+#   OPLUS_LOCKING_STRATEGY — master switch
+#   OPLUS_LOCKING_OSQ       — optimistic spin queue
+#   OPLUS_LOCKING_MONITOR   — lock statistics monitoring
+#
+# This file exists for directory self-containment; do not
+# source it from arch Kconfig (already defined upstream).
