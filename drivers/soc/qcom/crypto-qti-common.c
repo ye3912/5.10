@@ -203,93 +203,116 @@ int crypto_qti_debug(const struct ice_mmio_data *mmio_data)
 		ice_readl(ice_mmio, ICE_REGS_FUSE_SETTING));
 
 	pr_err("%s: ICE Param1: 0x%08x | ICE Param2:  0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_PARAMETERS_1),
 		ice_readl(ice_mmio, ICE_REGS_PARAMETERS_2));
 
 	pr_err("%s: ICE Param3: 0x%08x | ICE Param4:  0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_PARAMETERS_3),
 		ice_readl(ice_mmio, ICE_REGS_PARAMETERS_4));
 
 	pr_err("%s: ICE Param5: 0x%08x | ICE IRQ STTS:  0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_PARAMETERS_5),
 		ice_readl(ice_mmio, ICE_REGS_NON_SEC_IRQ_STTS));
 
 	pr_err("%s: ICE IRQ MASK: 0x%08x | ICE IRQ CLR:	0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_NON_SEC_IRQ_MASK),
 		ice_readl(ice_mmio, ICE_REGS_NON_SEC_IRQ_CLR));
 
 	pr_err("%s: ICE INVALID CCFG ERR STTS: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_INVALID_CCFG_ERR_STTS));
 
 	pr_err("%s: ICE BIST Sts: 0x%08x | ICE Bypass Sts:  0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_BIST_STATUS),
 		ice_readl(ice_mmio, ICE_REGS_BYPASS_STATUS));
 
 	pr_err("%s: ICE ADV CTRL: 0x%08x | ICE ENDIAN SWAP:	0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_ADVANCED_CONTROL),
 		ice_readl(ice_mmio, ICE_REGS_ENDIAN_SWAP));
 
 	pr_err("%s: ICE_STM1_ERR_SYND1: 0x%08x | ICE_STM1_ERR_SYND2: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_ERROR_SYNDROME1),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_ERROR_SYNDROME2));
 
 	pr_err("%s: ICE_STM2_ERR_SYND1: 0x%08x | ICE_STM2_ERR_SYND2: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_ERROR_SYNDROME1),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_ERROR_SYNDROME2));
 
 	pr_err("%s: ICE_STM1_COUNTER1: 0x%08x | ICE_STM1_COUNTER2: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS1),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS2));
 
 	pr_err("%s: ICE_STM1_COUNTER3: 0x%08x | ICE_STM1_COUNTER4: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS3),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS4));
 
 	pr_err("%s: ICE_STM2_COUNTER1: 0x%08x | ICE_STM2_COUNTER2: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS1),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS2));
 
 	pr_err("%s: ICE_STM2_COUNTER3: 0x%08x | ICE_STM2_COUNTER4: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS3),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS4));
 
 	pr_err("%s: ICE_STM1_CTR5_MSB: 0x%08x | ICE_STM1_CTR5_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS5_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS5_LSB));
 
 	pr_err("%s: ICE_STM1_CTR6_MSB: 0x%08x | ICE_STM1_CTR6_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS6_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS6_LSB));
 
 	pr_err("%s: ICE_STM1_CTR7_MSB: 0x%08x | ICE_STM1_CTR7_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS7_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS7_LSB));
 
 	pr_err("%s: ICE_STM1_CTR8_MSB: 0x%08x | ICE_STM1_CTR8_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS8_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS8_LSB));
 
 	pr_err("%s: ICE_STM1_CTR9_MSB: 0x%08x | ICE_STM1_CTR9_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS9_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM1_COUNTERS9_LSB));
 
 	pr_err("%s: ICE_STM2_CTR5_MSB: 0x%08x | ICE_STM2_CTR5_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS5_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS5_LSB));
 
 	pr_err("%s: ICE_STM2_CTR6_MSB: 0x%08x | ICE_STM2_CTR6_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS6_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS6_LSB));
 
 	pr_err("%s: ICE_STM2_CTR7_MSB: 0x%08x | ICE_STM2_CTR7_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS7_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS7_LSB));
 
 	pr_err("%s: ICE_STM2_CTR8_MSB: 0x%08x | ICE_STM2_CTR8_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS8_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS8_LSB));
 
 	pr_err("%s: ICE_STM2_CTR9_MSB: 0x%08x | ICE_STM2_CTR9_LSB: 0x%08x\n",
+		__func__,
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS9_MSB),
 		ice_readl(ice_mmio, ICE_REGS_STREAM2_COUNTERS9_LSB));
 
