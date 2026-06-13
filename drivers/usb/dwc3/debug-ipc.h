@@ -76,7 +76,7 @@
 	.offset	= USB3_##nm,				\
 }
 
-static struct debugfs_reg32 qscratch_reg[] = {
+static __maybe_unused struct debugfs_reg32 qscratch_reg[] = {
 	dump_qscratch_regs(PRI_IPCAT_REG),
 	dump_qscratch_regs(PRI_CTRL_REG),
 	dump_qscratch_regs(PRI_GENERAL_CFG),

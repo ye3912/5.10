@@ -918,7 +918,7 @@ static int msm_hsphy_vbus_notifier(struct notifier_block *nb,
 	}
 
 	phy->vbus_active = !!event;
-	dev_dbg(phy->phy.dev, "Got VBUS notification: %u\n", event);
+	dev_dbg(phy->phy.dev, "Got VBUS notification: %lu\n", event);
 	queue_delayed_work(system_freezable_wq, &phy->port_det_w, 0);
 
 	return NOTIFY_DONE;
@@ -947,7 +947,7 @@ static int msm_hsphy_id_notifier(struct notifier_block *nb,
 	}
 
 	phy->id_state = !event;
-	dev_dbg(phy->phy.dev, "Got id notification: %u\n", event);
+	dev_dbg(phy->phy.dev, "Got id notification: %lu\n", event);
 	queue_delayed_work(system_freezable_wq, &phy->port_det_w, 0);
 
 	return NOTIFY_DONE;
@@ -1292,10 +1292,7 @@ static void msm_hsphy_port_state_work(struct work_struct *w)
 			dev_info(phy->phy.dev, "Connected to CDP, pull DP up\n");
 			usb_phy_drive_dp_pulse(&phy->phy);
 		}
-		/*
-		 * Fall through to check if cable got disconnected
-		 * during detection.
-		 */
+        /*fall through*/
 	case PORT_CHG_DET_DONE:
 		if (!phy->vbus_active) {
 			phy->port_state = PORT_DISCONNECTED;
@@ -1318,7 +1315,7 @@ static void msm_hsphy_port_state_work(struct work_struct *w)
 		return;
 	}
 
-	dev_dbg(phy->phy.dev, "%s status:%d vbus_state:%d delay:%d\n",
+	dev_dbg(phy->phy.dev, "%s status:%d vbus_state:%d delay:%lu\n",
 				__func__, status, phy->vbus_active, delay);
 
 	queue_delayed_work(system_freezable_wq,
