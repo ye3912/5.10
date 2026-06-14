@@ -5824,6 +5824,7 @@ static int dwc3_msm_host_ss_powerup(struct dwc3_msm *mdwc)
 	return 0;
 }
 
+#if IS_REACHABLE(CONFIG_USB)
 static int dwc3_msm_host_notifier(struct notifier_block *nb,
 	unsigned long event, void *ptr)
 {
@@ -5891,6 +5892,26 @@ static int dwc3_msm_host_notifier(struct notifier_block *nb,
 
 	return NOTIFY_DONE;
 }
+
+static void dwc3_msm_register_host_notifier(struct dwc3_msm *mdwc)
+{
+	mdwc->host_nb.notifier_call = dwc3_msm_host_notifier;
+	usb_register_notify(&mdwc->host_nb);
+}
+
+static void dwc3_msm_unregister_host_notifier(struct dwc3_msm *mdwc)
+{
+	usb_unregister_notify(&mdwc->host_nb);
+}
+#else
+static inline void dwc3_msm_register_host_notifier(struct dwc3_msm *mdwc)
+{
+}
+
+static inline void dwc3_msm_unregister_host_notifier(struct dwc3_msm *mdwc)
+{
+}
+#endif
 
 static void msm_dwc3_perf_vote_update(struct dwc3_msm *mdwc, bool perf_mode)
 {
@@ -5988,8 +6009,7 @@ static int dwc3_otg_start_host(struct dwc3_msm *mdwc, int on)
 		}
 
 		usb_phy_notify_connect(mdwc->hs_phy, USB_SPEED_HIGH);
-		mdwc->host_nb.notifier_call = dwc3_msm_host_notifier;
-		usb_register_notify(&mdwc->host_nb);
+		dwc3_msm_register_host_notifier(mdwc);
 
 		if (!dwc->dis_enblslpm_quirk)
 			dwc3_en_sleep_mode(mdwc);
@@ -6104,7 +6124,7 @@ static int dwc3_otg_start_host(struct dwc3_msm *mdwc, int on)
 			flush_work(&dwc->drd_work);
 
 		mdwc->hs_phy->flags &= ~PHY_HOST_MODE;
-		usb_unregister_notify(&mdwc->host_nb);
+		dwc3_msm_unregister_host_notifier(mdwc);
 
 		dwc3_msm_write_reg_field(mdwc->base, DWC3_GUSB3PIPECTL(0),
 				DWC3_GUSB3PIPECTL_SUSPHY, 0);
