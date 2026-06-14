@@ -32,7 +32,6 @@
 *.lz4
 *.lzma
 *.lzo
-*.md
 *.mod
 *.mod.c
 *.o

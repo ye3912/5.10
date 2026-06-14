@@ -1915,7 +1915,7 @@ int oplus_battery_kona_init(struct device *dev, struct smb_charger *chg)
 		if (IS_ERR(kona->chgid_v_chan)) {
 			rc = PTR_ERR(kona->chgid_v_chan);
 			if (rc != -EPROBE_DEFER)
-				dev_err(dev, "chgid_v_chan get error, %ld\n",
+				dev_err(dev, "chgid_v_chan get error, %d\n",
 					rc);
 			kona->chgid_v_chan = NULL;
 		}
@@ -1928,7 +1928,7 @@ int oplus_battery_kona_init(struct device *dev, struct smb_charger *chg)
 		if (IS_ERR(kona->usbtemp_v_chan)) {
 			rc = PTR_ERR(kona->usbtemp_v_chan);
 			if (rc != -EPROBE_DEFER)
-				dev_err(dev, "usb_temp_adc get error, %ld\n",
+				dev_err(dev, "usb_temp_adc get error, %d\n",
 					rc);
 			kona->usbtemp_v_chan = NULL;
 		}
@@ -1943,7 +1943,7 @@ int oplus_battery_kona_init(struct device *dev, struct smb_charger *chg)
 			rc = PTR_ERR(kona->usbtemp_sup_v_chan);
 			if (rc != -EPROBE_DEFER)
 				dev_err(dev,
-					"usb_supplementary_temp_adc get error, %ld\n",
+					"usb_supplementary_temp_adc get error, %d\n",
 					rc);
 			kona->usbtemp_sup_v_chan = NULL;
 		}
