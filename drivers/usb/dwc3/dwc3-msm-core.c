@@ -1001,7 +1001,7 @@ static int dbm_get_num_of_eps_configured(struct dwc3_msm *mdwc)
 	return count;
 }
 
-static bool dwc3_msm_is_ss_rhport_connected(struct dwc3_msm *mdwc)
+static __maybe_unused bool dwc3_msm_is_ss_rhport_connected(struct dwc3_msm *mdwc)
 {
 	int i, num_ports;
 	u32 reg;
@@ -5783,7 +5783,7 @@ static int dwc3_msm_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int dwc3_msm_host_ss_powerdown(struct dwc3_msm *mdwc)
+static __maybe_unused int dwc3_msm_host_ss_powerdown(struct dwc3_msm *mdwc)
 {
 	u32 reg;
 
