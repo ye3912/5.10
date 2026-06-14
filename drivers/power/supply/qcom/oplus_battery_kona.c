@@ -17,6 +17,7 @@
 #include <linux/kthread.h>
 #include <linux/mutex.h>
 #include <linux/pinctrl/consumer.h>
+#include <linux/delay.h>
 #include <linux/pmic-voter.h>
 #include <linux/pm_wakeup.h>
 #include <linux/power_supply.h>
@@ -26,12 +27,18 @@
 #include "smb5-reg.h"
 #include "oplus_battery_kona.h"
 #include "../../oplus/oplus_charger.h"
+#include <soc/oplus/boot_mode.h>
 
 struct oplus_kona_chg {
 	struct device *dev;
 	struct smb_charger *chg;
 	struct oplus_chg_chip oplus_chip;
 	struct oplus_kona_gpio *gpio;
+
+	/* IIO channels for chargerid and USB temp (not in smb_iio) */
+	struct iio_channel *chgid_v_chan;
+	struct iio_channel *usbtemp_v_chan;
+	struct iio_channel *usbtemp_sup_v_chan;
 
 	/* USB temperature monitoring thread */
 	struct task_struct *usbtemp_kthread;
@@ -237,6 +244,13 @@ static void oplus_kona_set_typec_sinkonly(void)
 		dev_err(chg->dev, "%s: failed, rc=%d\n", __func__, rc);
 }
 
+/* Forward declarations — functions defined after ops table */
+static void oplus_kona_get_usbtemp_volt(struct oplus_chg_chip *chip);
+static int oplus_kona_get_chargerid_volt(void);
+static void oplus_kona_set_chargerid_switch_val(int value);
+static int oplus_kona_chargerid_switch_val(void);
+static bool oplus_kona_usbtemp_condition(struct oplus_chg_chip *chip);
+
 /**
  * oplus_kona_get_boot_mode() - Read boot mode from SMEM or cmdline.
  *
@@ -244,19 +258,19 @@ static void oplus_kona_set_typec_sinkonly(void)
  * Reads the OPLUS boot mode identifier used by the charging subsystem to
  * decide whether to enter ship mode, factory test, or normal charge.
  *
- * Return: boot mode integer (0 = normal), or 0 on error.
+ * In 5.10, the boot_mode fields were stored in smb_charger which has
+ * been redesigned.  Return 0 (normal boot) until OPLUS boot mode
+ * infrastructure is fully ported.
+ *
+ * Return: 0 (normal boot).
  */
 static int oplus_kona_get_boot_mode(void)
 {
-	struct smb_charger *chg = oplus_kona_get_chg();
-
-	if (!chg)
-		return 0;
-
-	if (chg->boot_mode_initialized)
-		return chg->boot_mode;
-
-	return 0; /* default: normal boot */
+	/*
+	 * 5.10 exports get_boot_mode() from drivers/soc/oplus/boot_mode.c
+	 * (include/soc/oplus/boot_mode.h).  Returns MSM_BOOT_MODE__NORMAL etc.
+	 */
+	return get_boot_mode();
 }
 
 /**
@@ -270,20 +284,12 @@ static int oplus_kona_get_boot_mode(void)
  */
 static int oplus_kona_get_boot_reason(void)
 {
-	struct smb_charger *chg = oplus_kona_get_chg();
-	int rc;
-	u8 val;
-
-	if (!chg)
-		return 0;
-
-	rc = smblib_read(chg, CHGR_PON_REASON_1_REG, &val);
-	if (rc < 0) {
-		dev_err(chg->dev, "%s: read fail, rc=%d\n", __func__, rc);
-		return 0;
-	}
-
-	return val;
+	/*
+	 * CHGR_PON_REASON_1_REG is a 4.19 downstream register not defined
+	 * in 5.10 smb5-reg.h.  Return 0 (unknown reason) until the PON
+	 * register mapping is ported.
+	 */
+	return 0;
 }
 
 /**
@@ -416,7 +422,12 @@ static int oplus_kona_get_instant_vbatt(void)
 	if (!chg)
 		return 0;
 
-	rc = smblib_get_prop_batt_voltage_now(chg, &pval);
+	if (!chg->batt_psy)
+		return 0;
+
+	rc = power_supply_get_property(chg->batt_psy,
+					POWER_SUPPLY_PROP_VOLTAGE_NOW,
+					&pval);
 	if (rc < 0) {
 		dev_err(chg->dev, "%s: read fail, rc=%d\n", __func__, rc);
 		return 0;
@@ -465,7 +476,7 @@ static struct oplus_chg_operations kona_smb5_chg_ops = {
  *
  * Return: true if wired charger present, false otherwise.
  */
-static bool oplus_kona_get_wired_chg_present(void)
+static __maybe_unused bool oplus_kona_get_wired_chg_present(void)
 {
 	struct smb_charger *chg = oplus_kona_get_chg();
 	int rc;
@@ -492,7 +503,7 @@ static bool oplus_kona_get_wired_chg_present(void)
  *
  * Return: true if OTG mode is active, false otherwise.
  */
-static bool oplus_kona_get_otg_switch_status(void)
+static __maybe_unused bool oplus_kona_get_otg_switch_status(void)
 {
 	/* OTG switch is managed by the OPLUS layer; for now return false.
 	 * Full OTG support will be added in a later phase once the
@@ -510,7 +521,7 @@ static bool oplus_kona_get_otg_switch_status(void)
  * In 4.19 this toggles ccdetect enable/disable and stores chip->otg_switch.
  * Full OTG support will be plumbed in a later phase.
  */
-static void oplus_kona_set_otg_switch_status(bool value)
+static __maybe_unused void oplus_kona_set_otg_switch_status(bool value)
 {
 	struct oplus_kona_chg *kona;
 
@@ -534,7 +545,7 @@ static void oplus_kona_set_otg_switch_status(bool value)
  *
  * 4.19 logic: value==1 selects active pinctrl state, value==0 selects default.
  */
-static void oplus_kona_set_idt_en_val(int value)
+static __maybe_unused void oplus_kona_set_idt_en_val(int value)
 {
 	struct oplus_kona_chg *kona;
 	struct oplus_kona_gpio *gpio;
@@ -584,7 +595,7 @@ static void oplus_kona_set_idt_en_val(int value)
  *
  * Return: GPIO value (0/1), or -1 on error.
  */
-static int oplus_kona_get_idt_en_val(void)
+static __maybe_unused int oplus_kona_get_idt_en_val(void)
 {
 	struct oplus_kona_chg *kona;
 	struct oplus_kona_gpio *gpio;
@@ -651,21 +662,26 @@ static void oplus_kona_set_chargerid_switch_val(int value)
  */
 static int oplus_kona_get_chargerid_volt(void)
 {
-	struct smb_charger *chg = oplus_kona_get_chg();
+	struct oplus_kona_chg *kona;
 	int rc, chargerid_volt = 0;
 
-	if (!chg)
+	mutex_lock(&oplus_kona_lock);
+	kona = oplus_kona_chip;
+	mutex_unlock(&oplus_kona_lock);
+
+	if (!kona || !kona->chg)
 		return 0;
 
-	if (IS_ERR_OR_NULL(chg->iio.chgid_v_chan)) {
-		dev_err(chg->dev, "%s: iio chgid_v_chan is NULL\n", __func__);
+	if (IS_ERR_OR_NULL(kona->chgid_v_chan)) {
+		/* chgid_v_chan not yet probed or DT property missing */
 		return 0;
 	}
 
-	rc = iio_read_channel_processed(chg->iio.chgid_v_chan,
+	rc = iio_read_channel_processed(kona->chgid_v_chan,
 					&chargerid_volt);
 	if (rc < 0) {
-		dev_err(chg->dev, "%s: iio read error, rc=%d\n", __func__, rc);
+		dev_err(kona->dev, "%s: iio read error, rc=%d\n",
+			__func__, rc);
 		return 0;
 	}
 
@@ -684,38 +700,44 @@ static int oplus_kona_get_chargerid_volt(void)
  */
 static void oplus_kona_get_usbtemp_volt(struct oplus_chg_chip *chip)
 {
-	struct smb_charger *chg = oplus_kona_get_chg();
+	struct oplus_kona_chg *kona;
 	int rc, usbtemp_volt;
 
-	if (!chip || !chg)
+	if (!chip)
 		return;
 
-	/* -- Primary/LHS USB temp ADC -- */
-	if (IS_ERR_OR_NULL(chg->iio.usbtemp_v_chan)) {
-		dev_err(chg->dev, "%s: usbtemp_v_chan is NULL\n", __func__);
-	} else {
-		rc = iio_read_channel_processed(chg->iio.usbtemp_v_chan,
+	mutex_lock(&oplus_kona_lock);
+	kona = oplus_kona_chip;
+	mutex_unlock(&oplus_kona_lock);
+
+	if (!kona || !kona->chg)
+		return;
+
+	/* Primary/LHS USB temp ADC */
+	if (!IS_ERR_OR_NULL(kona->usbtemp_v_chan)) {
+		rc = iio_read_channel_processed(kona->usbtemp_v_chan,
 						&usbtemp_volt);
 		if (rc < 0) {
-			dev_err(chg->dev, "%s: iio read usbtemp_v error, rc=%d\n",
+			dev_err(kona->dev,
+				"%s: iio read usbtemp_v error, rc=%d\n",
 				__func__, rc);
 		} else {
 			chip->usbtemp_volt_l = usbtemp_volt / 1000;
+			chip->usb_temp_l = chip->usbtemp_volt_l;
 		}
 	}
 
-	/* -- Supplementary/RHS USB temp ADC -- */
-	if (IS_ERR_OR_NULL(chg->iio.usbtemp_sup_v_chan)) {
-		dev_err(chg->dev, "%s: usbtemp_sup_v_chan is NULL\n", __func__);
-	} else {
-		rc = iio_read_channel_processed(chg->iio.usbtemp_sup_v_chan,
+	/* Supplementary/RHS USB temp ADC */
+	if (!IS_ERR_OR_NULL(kona->usbtemp_sup_v_chan)) {
+		rc = iio_read_channel_processed(kona->usbtemp_sup_v_chan,
 						&usbtemp_volt);
 		if (rc < 0) {
-			dev_err(chg->dev,
+			dev_err(kona->dev,
 				"%s: iio read usbtemp_sup_v error, rc=%d\n",
 				__func__, rc);
 		} else {
 			chip->usbtemp_volt_r = usbtemp_volt / 1000;
+			chip->usb_temp_r = chip->usbtemp_volt_r;
 		}
 	}
 }
@@ -724,7 +746,8 @@ static void oplus_kona_get_usbtemp_volt(struct oplus_chg_chip *chip)
 
 /* Forward declarations for internal thread helpers */
 static int oplus_kona_usbtemp_dischg_action(struct oplus_chg_chip *chip);
-static void oplus_kona_usbtemp_clear_dischg(struct oplus_chg_chip *chip);
+static __maybe_unused void oplus_kona_usbtemp_clear_dischg(
+			    struct oplus_chg_chip *chip);
 
 /* Temperature thresholds in degC */
 #define USB_20C		20
@@ -765,8 +788,8 @@ static bool oplus_kona_usbtemp_condition(struct oplus_chg_chip *chip)
 		return false;
 
 	/* Skip monitoring in Type-C sink modes (OTG) */
-	if (chg->typec_mode >= POWER_SUPPLY_TYPEC_SINK &&
-	    chg->typec_mode <= POWER_SUPPLY_TYPEC_POWERED_CABLE_ONLY)
+	if (chg->typec_mode >= QTI_POWER_SUPPLY_TYPEC_SINK &&
+	    chg->typec_mode <= QTI_POWER_SUPPLY_TYPEC_POWERED_CABLE_ONLY)
 		return false;
 
 	/* Check ccdetect GPIO if available */
@@ -840,7 +863,7 @@ static int oplus_kona_usbtemp_dischg_action(struct oplus_chg_chip *chip)
  * Ported from 4.19 oplus_usbtemp_clear_dischg().
  * Clears the USB_TEMP_HIGH status and re-enables charging.
  */
-static void oplus_kona_usbtemp_clear_dischg(struct oplus_chg_chip *chip)
+static __maybe_unused void oplus_kona_usbtemp_clear_dischg(struct oplus_chg_chip *chip)
 {
 	struct smb_charger *chg = oplus_kona_get_chg();
 	int rc;
@@ -1115,7 +1138,7 @@ static void oplus_kona_usbtemp_thread_init(void)
  *
  * Key 5.10 migration: uses pm_wakeup_event() instead of the removed wake_lock API.
  */
-static void oplus_kona_wake_up_usbtemp_thread(void)
+static __maybe_unused void oplus_kona_wake_up_usbtemp_thread(void)
 {
 	struct oplus_kona_chg *kona;
 	struct oplus_chg_chip *chip;
@@ -1234,7 +1257,6 @@ static int oplus_kona_parse_ccdetect_dt(struct device *dev,
 static int oplus_kona_parse_usbtemp_dt(struct device *dev,
 				       struct oplus_kona_gpio *gpio)
 {
-	int rc;
 
 	/* --- GPIO1 ADC --- */
 	gpio->usbtemp_gpio1_adc_pinctrl = devm_pinctrl_get(dev);
@@ -1812,6 +1834,14 @@ static void oplus_battery_kona_deinit_action(void *data)
 		kona->usbtemp_kthread = NULL;
 	}
 
+	/* Release OPLUS-specific IIO channels */
+	if (!IS_ERR_OR_NULL(kona->chgid_v_chan))
+		iio_channel_release(kona->chgid_v_chan);
+	if (!IS_ERR_OR_NULL(kona->usbtemp_v_chan))
+		iio_channel_release(kona->usbtemp_v_chan);
+	if (!IS_ERR_OR_NULL(kona->usbtemp_sup_v_chan))
+		iio_channel_release(kona->usbtemp_sup_v_chan);
+
 	oplus_chg_deinit(&kona->oplus_chip);
 
 	mutex_lock(&oplus_kona_lock);
@@ -1848,6 +1878,11 @@ int oplus_battery_kona_init(struct device *dev, struct smb_charger *chg)
 	kona->chg = chg;
 	kona->oplus_chip.dev = dev;
 	kona->oplus_chip.chg_ops = &kona_smb5_chg_ops;
+	kona->oplus_chip.usb_temp_l = 25;
+	kona->oplus_chip.usb_temp_r = 25;
+	kona->oplus_chip.tbatt_temp = 250;
+	kona->oplus_chip.usbtemp_temp_up_time_thr = 30;
+	kona->oplus_chip.usbtemp_max_temp_thr = USB_57C;
 
 	mutex_lock(&oplus_kona_lock);
 	if (oplus_kona_chip) {
@@ -1866,6 +1901,53 @@ int oplus_battery_kona_init(struct device *dev, struct smb_charger *chg)
 	rc = oplus_kona_gpio_parse_dt(dev, kona);
 	if (rc < 0)
 		return rc;
+
+	/* Acquire OPLUS-specific IIO channels from DT io-channel-names.
+	 * These are NOT part of the upstream smb_iio struct — they are
+	 * OPLUS-only ADC channels declared in the 8T device tree.
+	 * Ported from 4.19 oplus_battery_msm8250.c probe path.
+	 */
+	rc = of_property_match_string(dev->of_node, "io-channel-names",
+				      "chgID_voltage_adc");
+	if (rc >= 0) {
+		kona->chgid_v_chan = iio_channel_get(dev,
+						     "chgID_voltage_adc");
+		if (IS_ERR(kona->chgid_v_chan)) {
+			rc = PTR_ERR(kona->chgid_v_chan);
+			if (rc != -EPROBE_DEFER)
+				dev_err(dev, "chgid_v_chan get error, %ld\n",
+					rc);
+			kona->chgid_v_chan = NULL;
+		}
+	}
+
+	rc = of_property_match_string(dev->of_node, "io-channel-names",
+				      "usb_temp_adc");
+	if (rc >= 0) {
+		kona->usbtemp_v_chan = iio_channel_get(dev, "usb_temp_adc");
+		if (IS_ERR(kona->usbtemp_v_chan)) {
+			rc = PTR_ERR(kona->usbtemp_v_chan);
+			if (rc != -EPROBE_DEFER)
+				dev_err(dev, "usb_temp_adc get error, %ld\n",
+					rc);
+			kona->usbtemp_v_chan = NULL;
+		}
+	}
+
+	rc = of_property_match_string(dev->of_node, "io-channel-names",
+				      "usb_supplementary_temp_adc");
+	if (rc >= 0) {
+		kona->usbtemp_sup_v_chan = iio_channel_get(dev,
+					"usb_supplementary_temp_adc");
+		if (IS_ERR(kona->usbtemp_sup_v_chan)) {
+			rc = PTR_ERR(kona->usbtemp_sup_v_chan);
+			if (rc != -EPROBE_DEFER)
+				dev_err(dev,
+					"usb_supplementary_temp_adc get error, %ld\n",
+					rc);
+			kona->usbtemp_sup_v_chan = NULL;
+		}
+	}
 
 	rc = oplus_chg_init(&kona->oplus_chip);
 	if (rc < 0)

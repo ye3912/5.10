@@ -124,6 +124,17 @@ struct oplus_chg_chip {
 	int charger_current_ma;
 	int total_time;
 	int recharge_count;
+	/* USB temperature monitoring (ported from 4.19 oplus_chg_chip) */
+	int shutdown_soc;
+	int usbtemp_volt_l;
+	int usbtemp_volt_r;
+	bool usbtemp_check;
+	bool dischg_flag;
+	int usb_temp_l;
+	int usb_temp_r;
+	int usbtemp_temp_up_time_thr;
+	int usbtemp_max_temp_thr;
+	int tbatt_temp;
 };
 #include <linux/thermal.h>
 #include "oplus_power_supply_ext.h"
@@ -262,7 +273,7 @@ struct oplus_chg_operations {
 	void (*set_typec_sinkonly)(void);
 	void (*set_typec_cc_open)(void);
 	void (*really_suspend_charger)(bool en);
-	bool (*oplus_usbtemp_monitor_condition)(void);
+	bool (*oplus_usbtemp_monitor_condition)(struct oplus_chg_chip *chip);
 	int (*recovery_usbtemp)(void *data);
 	void (*dump_registers)(void);
 	int (*kick_wdt)(void);
