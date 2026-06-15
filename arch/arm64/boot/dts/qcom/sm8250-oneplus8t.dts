@@ -13,6 +13,18 @@
 #include "pm8150l.dtsi"
 #include "pm8009.dtsi"
 
+/*
+ * OnePlus 8T factory DTB relocates PIL carveouts from upstream SM8250
+ * addresses to avoid reserved-memory overlap. Delete upstream nodes and
+ * rebuild them at factory addresses with both upstream and downstream
+ * labels on a single physical node (see reserved-memory block below).
+ */
+/delete-node/ &removed_mem;
+/delete-node/ &cdsp_mem;
+/delete-node/ &adsp_mem;
+/delete-node/ &spss_mem;
+/delete-node/ &cdsp_secure_heap;
+
 / {
 	aliases {
 		serial0 = &uart12;
@@ -33,6 +45,12 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
+
+		removed_mem: memory@80b00000 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0x0 0x80b00000 0x0 0xcd00000>;
+		};
 
 		reserved_xbl_uefi_log: res_xbl_uefi_log_region@80880000 {
 			no-map;
@@ -79,9 +97,10 @@
 			reg = <0x0 0x87300000 0x0 0x500000>;
 		};
 
-		pil_cdsp_mem: pil_cdsp_region@87800000 {
+		cdsp_mem: pil_cdsp_mem: memory@8f200000 {
+			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x87800000 0x0 0x1400000>;
+			reg = <0x0 0x8f200000 0x0 0x1400000>;
 		};
 
 		pil_slpi_mem: pil_slpi_region@88c00000 {
@@ -89,14 +108,22 @@
 			reg = <0x0 0x88c00000 0x0 0x1500000>;
 		};
 
-		pil_adsp_mem: pil_adsp_region@8a100000 {
+		adsp_mem: pil_adsp_mem: memory@91b00000 {
+			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x8a100000 0x0 0x1d00000>;
+			reg = <0x0 0x91b00000 0x0 0x2500000>;
 		};
 
-		pil_spss_mem: pil_spss_region@8be00000 {
+		spss_mem: pil_spss_mem: memory@94000000 {
+			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x8be00000 0x0 0x100000>;
+			reg = <0x0 0x94000000 0x0 0x100000>;
+		};
+
+		cdsp_secure_heap: memory@94100000 {
+			compatible = "removed-dma-pool";
+			no-map;
+			reg = <0x0 0x94100000 0x0 0x4600000>;
 		};
 
 		sdsp_mem: sdsp_region {
@@ -187,6 +214,12 @@
 			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
 			alignment = <0x0 0x400000>;
 			size = <0x0 0x20000>;
+		};
+
+		kboot_uboot_logmem: memory@9fe00000 {
+			compatible = "oplus,xbl_uefi_kbootlog";
+			no-map;
+			reg = <0x0 0x9fe00000 0x0 0x200000>;
 		};
 
 		ramoops@B0000000 {
