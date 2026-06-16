@@ -1,177 +1,88 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * panic_logstore.c - Dump kernel ring buffer to persistent file on panic
+ * panic_logstore.c - Dump kernel ring buffer to persistent storage on panic
  *
- * When the kernel panics, this module writes the dmesg ring buffer to
- * /mnt/oplus/op2/last_panic.txt so logs can be retrieved after reboot.
- * It temporarily drops SELinux to permissive and overrides creds to root
- * to bypass filesystem access restrictions.
+ * Based on libxzr/kernel-playground commit 1add6c0 (4.19).
+ * Changed target path from /mnt/oplus/op2/last_panic.txt to
+ * /dev/block/by-name/metadata (raw block device) because the
+ * filesystem mount is unreliable during early boot crashes.
  *
- * A module parameter "trigger" allows manual invocation for hung-task
- * debugging: echo 1 > /sys/module/panic_logstore/parameters/trigger
- *
- * Adapted from libxzr/kernel-playground commit 1add6c0 (4.19) for 5.10:
- *   - call_blocking_lsm_notifier() replaces call_lsm_notifier()
- *   - kmsg_dump_get_line() API unchanged
- *   - override_creds/revert_creds API unchanged
- *
- * Limitations (from original author):
- *   "Optimistically assumes filesystems and storage drivers are not to
- *    blame for the panic. Can't catch logs before the target partition
- *    is properly mounted."
- *
- * Copyright (c) 2024, libxzr
- * Copyright (c) 2025, OPLUS SM8250 5.10 port
+ * Test: echo 1 > /sys/module/panic_logstore/parameters/trigger
  */
+
+#define pr_fmt(fmt) "panic_logstore: " fmt
 
 #include <linux/cred.h>
-#include <linux/err.h>
-#include <linux/fcntl.h>
+#include <linux/file.h>
 #include <linux/fs.h>
+#include <linux/kernel.h>
 #include <linux/kmsg_dump.h>
-#include <linux/kstrtox.h>
 #include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/panic_logstore.h>
-#include <linux/printk.h>
-#include <linux/types.h>
 
-/* Target file path for panic log storage */
-#define LOGSTORE_PATH "/mnt/oplus/op2/last_panic.txt"
-#define LOGSTORE_LINE_SIZE 1024
+#define LOG_FILE_PATH "/dev/block/by-name/metadata"
 
-/* Module parameter: manual trigger for hung-task debugging */
-static int trigger;
+#if IS_ENABLED(CONFIG_SECURITY_SELINUX_DEVELOP)
+void sel_set_enforce(int);
+#else
+#error CONFIG_SECURITY_SELINUX_DEVELOP is not enabled.
+#endif
 
-/**
- * do_logstore() - Dump kernel ring buffer to persistent file
- *
- * Steps:
- *   1. Switch SELinux to permissive (if CONFIG_SECURITY_SELINUX_DEVELOP)
- *   2. Override credentials to root (uid=0, gid=0, full capabilities)
- *   3. Open LOGSTORE_PATH for writing (O_WRONLY | O_CREAT | O_TRUNC)
- *   4. Iterate kmsg_dump_get_line() to write entire ring buffer
- *   5. vfs_fsync() to ensure data reaches storage
- *   6. filp_close()
- *   7. Revert credentials
- *   8. Re-enforce SELinux
- *
- * Must be called from process context with local IRQs enabled.
- * Optimistically assumes filesystems and storage are functional.
- */
 void do_logstore(void)
 {
-	struct kmsg_dumper dumper = { .active = true };
-	struct file *file;
-	struct cred *new_cred;
-	const struct cred *old_cred;
-	char line[LOGSTORE_LINE_SIZE];
+	const struct cred *saved_cred, *root_cred;
+	struct kmsg_dumper dumper = {0};
+	char buf[1024] = {0};
+	struct file *f;
 	size_t len;
-	loff_t pos = 0;
-	ssize_t written;
 	int ret;
 
-#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-	int was_enforcing = 0;
-#endif
+	// Well, it's always not a good idea to permissive selinux.
+	// But we are already in panic, so what?
+	sel_set_enforce(0);
+	root_cred = prepare_kernel_cred(NULL);
+	saved_cred = override_creds(root_cred);
 
-	new_cred = prepare_kernel_cred(NULL);
-	if (!new_cred) {
-		pr_emerg("logstore: failed to prepare kernel credentials\n");
-		return;
+	f = filp_open(LOG_FILE_PATH, O_WRONLY | O_SYNC, 0);
+	if (IS_ERR(f)) {
+		ret = PTR_ERR(f);
+		pr_err("Unable to open log file, ret = %d", ret);
+		goto exit;
 	}
 
-	old_cred = override_creds(new_cred);
-
-#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-	was_enforcing = sel_get_enforce();
-	if (was_enforcing)
-		sel_set_enforce(0);
-#endif
-
-	file = filp_open(LOGSTORE_PATH, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	if (IS_ERR(file)) {
-		pr_emerg("logstore: failed to open %s: %ld\n",
-			 LOGSTORE_PATH, PTR_ERR(file));
-		goto err_restore_selinux;
-	}
-
-	kmsg_dump_rewind(&dumper);
-	while (kmsg_dump_get_line(&dumper, true, line, sizeof(line), &len)) {
-		written = kernel_write(file, line, len, &pos);
-		if (written < 0) {
-			ret = written;
-			pr_emerg("logstore: failed to write %s: %d\n",
-				 LOGSTORE_PATH, ret);
-			goto err_close_file;
-		}
-
-		if ((size_t)written != len) {
-			pr_emerg("logstore: short write to %s: %zd/%zu\n",
-				 LOGSTORE_PATH, written, len);
-			break;
+	dumper.active = true;
+	while (kmsg_dump_get_line(&dumper, false, buf, sizeof(buf), &len)) {
+		ret = kernel_write(f, buf, len, &f->f_pos);
+		if (ret != len) {
+			pr_err("Unable to write log file, ret = %d", ret);
+			goto clean;
 		}
 	}
 
-	ret = vfs_fsync(file, 0);
-	if (ret)
-		pr_emerg("logstore: failed to fsync %s: %d\n",
-			 LOGSTORE_PATH, ret);
+	ret = vfs_fsync(f, 0);
+	if (ret) {
+		pr_err("Unable to sync log file, ret = %d", ret);
+		goto clean;
+	}
 
-err_close_file:
-	ret = filp_close(file, NULL);
-	if (ret)
-		pr_emerg("logstore: failed to close %s: %d\n",
-			 LOGSTORE_PATH, ret);
+	pr_info("Panic logstore is done.");
 
-err_restore_selinux:
-
-#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-	if (was_enforcing)
-		sel_set_enforce(1);
-#endif
-
-	revert_creds(old_cred);
-	put_cred(new_cred);
+clean:
+	filp_close(f, NULL);
+exit:
+	revert_creds(saved_cred);
+	sel_set_enforce(1);
 }
 
-/**
- * trigger_store() - Module parameter callback for manual trigger
- * @val: String written to the trigger parameter.
- * @kp: Kernel parameter metadata.
- *
- * Writing 1 to /sys/module/panic_logstore/parameters/trigger
- * will invoke do_logstore() immediately. Useful for debugging
- * hung tasks where the system hasn't actually panicked yet.
- *
- * Return: 0 on success, negative errno on parse failure.
- */
-static int trigger_store(const char *val, const struct kernel_param *kp)
+static int logstore_trigger_store(
+        const char *buf, const struct kernel_param *kp)
 {
-	int ret;
-
-	ret = kstrtoint(val, 10, &trigger);
-	if (ret)
-		return ret;
-
-	if (trigger == 1) {
-		pr_emerg("logstore: manual trigger invoked\n");
-		do_logstore();
-		trigger = 0;
-	}
-
+	do_logstore();
 	return 0;
 }
 
-static const struct kernel_param_ops trigger_ops = {
-	.set = trigger_store,
-	.get = param_get_int,
+static struct kernel_param_ops logstore_trigger_ops = {
+	.set = &logstore_trigger_store,
 };
 
-module_param_cb(trigger, &trigger_ops, &trigger, 0600);
-MODULE_PARM_DESC(trigger, "Manually trigger logstore dump (set to 1)");
-
+module_param_cb(trigger, &logstore_trigger_ops, NULL, 0644);
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("libxzr <libxzr@gmail.com>");
-MODULE_AUTHOR("OPLUS SM8250 5.10 port");
-MODULE_DESCRIPTION("Dump kernel ring buffer to persistent file on panic");
