@@ -39,3 +39,5 @@ config OPLUS_BOOT_MODE
 	  Say Y if building for OnePlus SM8250 (kona) devices.
 
 endmenu
+
+source "drivers/soc/oplus/healthinfo/Kconfig"

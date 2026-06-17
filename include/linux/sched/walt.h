@@ -163,6 +163,21 @@ struct walt_task_struct {
 	struct task_info	oplus_task_info;
 #endif
 #endif /* CONFIG_OPLUS_FEATURE_SCHED_ASSIST */
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_FRAME_BOOST)
+	/*
+	 * OPLUS frame_boost per-task state. In 4.19 these were direct
+	 * task_struct members. In 5.10 GKI they live in vendor data space
+	 * via walt_task_struct overlaying task_struct->android_vendor_data1.
+	 *
+	 * Access via fbg_state(p) etc. from frame_boost.h.
+	 * Do NOT access p->fbg_state directly -- it does not exist in 5.10.
+	 */
+	int				fbg_state;
+	int				fbg_depth;
+	bool				fbg_running;
+	struct list_head		fbg_list;
+	int				preferred_cluster_id;
+#endif /* CONFIG_OPLUS_FEATURE_FRAME_BOOST */
 };
 
 #define wts_to_ts(wts) ({ \

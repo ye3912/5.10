@@ -751,7 +751,7 @@ static void insert_ux_task_into_list(struct rq *rq, struct task_struct *p)
 	list_for_each(pos, sa_ux_thread_list(rq)) {
 		if (pos == &sa_ux_entry(p)) {
 			exist = true;
-			BUG_ON(1);
+			WARN_ON_ONCE(1);
 			break;
 		}
 	}

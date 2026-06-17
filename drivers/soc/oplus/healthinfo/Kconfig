@@ -1,0 +1,6 @@
+config OPLUS_HEALTHINFO
+	bool "OPLUS healthinfo (OHM) support"
+	default n
+	help
+	  Minimal healthinfo support for sched_info / cpuloadmonitor.
+	  Full OHM stack not yet ported.

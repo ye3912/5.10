@@ -488,3 +488,23 @@ If any answer is "no", fix the response before sending.
 The repo has Mnemo initialized with a large knowledge graph. Use `mnemo_recall` at session start when available, and use Mnemo/ContextStream for prior decisions and code relationships.
 
 Do not use memory as a substitute for checking the actual file when the file is available.
+
+---
+
+## 15. External Migration Plans and Status Files
+
+The following files live **outside the git repo** in `C:\5.10\migration-plans\`. They are planning/tracking documents, not source code. Do not commit them.
+
+| File | Purpose |
+|---|---|
+| `SM8250_5.10_MIGRATION_PLAN.md` | Master migration plan: P0–P6 phases for 8T/8 Pro port |
+| `OPLUS_SCHED_ASSIST_MIGRATION_PLAN.md` | Sched assist detailed plan: evidence, phases, defconfig strategy |
+| `SCHED_ASSIST_HOOK_STATUS.md` | **Hook implementation tracker**: 29 hooks across `sched_assist_vh.c` and `binder_assist_vh.c`, with status (implemented / no-op / stub) and blocking reasons |
+
+When working on sched_assist, binder hooks, or any OPLUS_FEATURE_SCHED_ASSIST code:
+
+1. Read `SCHED_ASSIST_HOOK_STATUS.md` first to know which hooks are implemented vs stub.
+2. Check the "blocking reasons" column before attempting to implement a stub.
+3. Update the status file after completing any hook implementation.
+
+When planning a new migration phase, read the relevant plan file first.

@@ -15,6 +15,7 @@ obj-y     = fork.o exec_domain.o panic.o \
 obj-$(CONFIG_PANIC_LOGSTORE) += panic_logstore.o
 obj-$(CONFIG_OPLUS_LOGBUF) += oplus_logbuf.o
 obj-$(CONFIG_OPLUS_SCREENLOG) += oplus_screenlog.o
+obj-$(CONFIG_OPLUS_FEATURE_FRAME_BOOST) += tuning/
 
 obj-$(CONFIG_USERMODE_DRIVER) += usermode_driver.o
 obj-$(CONFIG_MODULES) += kmod.o

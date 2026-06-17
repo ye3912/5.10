@@ -49,6 +49,9 @@ void do_logstore(void)
 		goto exit;
 	}
 
+	/* Truncate stale data from previous (possibly partial) write */
+	vfs_truncate(&f->f_path, 0);
+
 	dumper.active = true;
 	while (kmsg_dump_get_line(&dumper, false, buf, sizeof(buf), &len)) {
 		ret = kernel_write(f, buf, len, &f->f_pos);
@@ -66,11 +69,13 @@ void do_logstore(void)
 
 	pr_info("Panic logstore is done.");
 
+	/* Only re-enable SELinux on successful write */
+	sel_set_enforce(1);
+
 clean:
 	filp_close(f, NULL);
 exit:
 	revert_creds(saved_cred);
-	sel_set_enforce(1);
 }
 
 static int logstore_trigger_store(

@@ -107,3 +107,5 @@ config PROC_PID_ARCH_STATUS
 config PROC_CPU_RESCTRL
 	def_bool n
 	depends on PROC_FS
+
+source "fs/proc/sched_info/Kconfig"
