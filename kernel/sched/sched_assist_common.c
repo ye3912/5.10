@@ -19,6 +19,7 @@
 #include <linux/sched.h>
 #include <linux/list.h>
 #include <linux/jiffies.h>
+#include <linux/reciprocal_div.h>
 #include <trace/events/sched.h>
 #include <../kernel/sched/sched.h>
 #include <linux/fs.h>
@@ -96,6 +97,31 @@ struct ux_sched_cputopo ux_sched_cputopo;
 #ifdef CONFIG_OPLUS_FEATURE_SCHED_SPREAD
 DEFINE_PER_CPU(struct task_count_rq, task_lb_count);
 #endif
+
+/*
+ * Heavy load detection — ported from 4.19 kernel/special_opt/special_opt.c
+ *
+ * When sysctl_cpu_multi_thread is enabled, tasks with util > 80% of CPU
+ * capacity are considered "heavy load". check_preempt_tick extends their
+ * runtime and check_preempt_wakeup skips preemption for them.
+ */
+static int sysctl_cpu_multi_thread;
+module_param_named(enable, sysctl_cpu_multi_thread, uint, 0644);
+
+bool is_heavy_load_task(struct task_struct *p)
+{
+	int cpu;
+	unsigned long thresh_load;
+	struct reciprocal_value spc_rdiv = reciprocal_value(100);
+
+	if (!sysctl_cpu_multi_thread || !p)
+		return false;
+	cpu = task_cpu(p);
+	thresh_load = capacity_orig_of(cpu) * HEAVY_LOAD_SCALE;
+	if (task_util(p) > reciprocal_divide(thresh_load, spc_rdiv))
+		return true;
+	return false;
+}
 
 /*
  * Forward declarations for functions defined later in this file.

@@ -174,6 +174,11 @@ enum OPLUS_LB_TYPE {
 extern int global_debug_enabled;
 extern int sysctl_boost_task_threshold;
 
+bool is_heavy_load_task(struct task_struct *p);
+
+#define HEAVY_LOAD_RUNTIME ((u64)1024000000)  /* ~1 second in ns */
+#define HEAVY_LOAD_SCALE 80
+
 struct rq;
 extern int sysctl_input_boost_enabled;
 extern int sysctl_animation_type;

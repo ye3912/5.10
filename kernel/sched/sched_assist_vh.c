@@ -67,7 +67,12 @@ static void sa_check_preempt_tick(void *data, struct task_struct *p,
 				  struct sched_entity *curr,
 				  unsigned int granularity)
 {
-	/* TODO: sched_assist_check_preempt_tick() — needs careful analysis */
+	/*
+	 * Ported from 4.19 fair.c:4633-4650
+	 * Heavy load tasks get extended runtime and skip preempt checks.
+	 */
+	if (is_heavy_load_task(p))
+		*ideal_runtime = HEAVY_LOAD_RUNTIME;
 }
 
 static void sa_check_preempt_wakeup(void *data, struct rq *rq,
@@ -82,6 +87,13 @@ static void sa_check_preempt_wakeup(void *data, struct rq *rq,
 	struct task_struct *curr = rq->curr;
 
 	if (!sysctl_sched_assist_enabled)
+		return;
+
+	/*
+	 * Ported from 4.19 fair.c:8682-8685
+	 * Heavy load current task should not be preempted.
+	 */
+	if (is_heavy_load_task(curr))
 		return;
 
 #if IS_ENABLED(CONFIG_OPLUS_FEATURE_SCHED_UX_PRIORITY)
@@ -139,17 +151,27 @@ static void sa_find_busiest_queue(void *data, int dst_cpu,
 
 static void sa_try_to_wake_up(void *data, struct task_struct *p)
 {
-	/* TODO: sched_assist_try_to_wake_up() */
+	/*
+	 * 4.19 has no sched_assist modification in try_to_wake_up().
+	 * No action needed — handler kept as registered hook placeholder.
+	 */
 }
 
 static void sa_try_to_wake_up_success(void *data, struct task_struct *p)
 {
-	/* TODO: sched_assist_try_to_wake_up_success() */
+	/*
+	 * 4.19 has no sched_assist modification in try_to_wake_up success path.
+	 * No action needed — handler kept as registered hook placeholder.
+	 */
 }
 
 static void sa_sched_fork(void *data, struct task_struct *p)
 {
-	/* TODO: sched_assist_task_fork() */
+	/*
+	 * 4.19 has no sched_assist modification in sched_fork().
+	 * init_task_ux_info() is called from fork.c, handled by sa_sched_fork_init().
+	 * No action needed — handler kept as registered hook placeholder.
+	 */
 }
 
 static void sa_sched_fork_init(void *data, struct task_struct *p)
@@ -169,8 +191,11 @@ static void sa_sched_fork_init(void *data, struct task_struct *p)
 
 static void sa_wake_up_new_task(void *data, struct task_struct *p)
 {
-	/* TODO: sched_assist_wake_up_new_task() */
-	sched_assist_target_comm(p);
+	/*
+	 * 4.19 has no sched_assist modification in wake_up_new_task().
+	 * sched_assist_target_comm() is called from fs/exec.c (both 4.19 and 5.10).
+	 * No action needed here — handler kept as registered hook placeholder.
+	 */
 }
 
 /* ─── Additional hooks ──────────────────────────────────────── */
