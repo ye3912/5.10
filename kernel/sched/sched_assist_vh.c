@@ -108,13 +108,72 @@ static void sa_select_task_rq_fair(void *data, struct task_struct *p,
 				   int prev_cpu, int sd_flag,
 				   int wake_flags, int *new_cpu)
 {
-	/* TODO: sched_assist_select_task_rq_fair() — CPU placement */
+	/*
+	 * Ported from 4.19 fair.c:find_energy_efficient_cpu() — 4 modification points.
+	 *
+	 * 5.10 hook semantics: *new_cpu is initialized to -1 by the caller.
+	 *   - If handler sets *new_cpu >= 0: function returns immediately,
+	 *     skipping EAS and default path entirely.
+	 *   - If handler leaves *new_cpu = -1: scheduler continues normally.
+	 *
+	 * 4.19 semantics: EAS already selected a CPU, sched_assist adjusts result.
+	 *
+	 * Key difference: In 5.10, we can only OVERRIDE (set >= 0, skip EAS)
+	 * or DEFER (leave -1, let EAS decide). We cannot "adjust after EAS".
+	 *
+	 * Strategy:
+	 *   - SA_LAUNCH scene: override to preferred (big) CPU — skip EAS.
+	 *   - Slide scene + heavy UX misfit: defer to EAS, cannot fix in hook.
+	 *   - Other scenes: defer to EAS.
+	 */
+	int target_cpu;
+
+	if (!sysctl_sched_assist_enabled)
+		return;
+
+	if (!test_task_ux(p))
+		return;
+
+	/*
+	 * SA_LAUNCH scene: move UX task to preferred (big) CPU.
+	 * 4.19: set_ux_task_to_prefer_cpu(p, &best_energy_cpu)
+	 * In 5.10: override *new_cpu to skip EAS entirely.
+	 */
+	if (sched_assist_scene(SA_LAUNCH)) {
+		target_cpu = *new_cpu;
+		set_ux_task_to_prefer_cpu(p, &target_cpu);
+		if (target_cpu >= 0) {
+			*new_cpu = target_cpu;
+			return;
+		}
+	}
+
+	/*
+	 * Slide scene misfit: In 4.19, this adjusts the EAS result.
+	 * In 5.10 hook, we cannot "adjust after EAS" — *new_cpu = -1 means
+	 * EAS hasn't run yet. Defer to EAS; the misfit check happens in
+	 * select_task_rq_fair's default path via task_fits_max().
+	 * No action possible in this hook for slide misfit.
+	 */
 }
 
 static void sa_can_migrate_task(void *data, struct task_struct *p,
 				int dst_cpu, int *can_migrate)
 {
-	/* TODO: sched_assist_can_migrate_task() */
+	/*
+	 * Call chain: load_balance() → detach_tasks() → can_migrate_task()
+	 * Hook: fair.c:7880 — trace_android_rvh_can_migrate_task(p, dst_cpu, &can_migrate)
+	 *
+	 * Hook fires FIRST, before all other checks (throttled, cpus_allowed,
+	 * running, cache hot). If handler sets *can_migrate = 0, function
+	 * returns 0 immediately (task cannot be migrated).
+	 *
+	 * Default: *can_migrate = 1 (caller initializes before hook).
+	 *
+	 * 4.19 can_migrate_task() has no OPLUS_FEATURE_SCHED_ASSIST modification.
+	 * Only CONFIG_OPLUS_FEATURE_FRAME_BOOST (fbg_skip_migration) and
+	 * CONFIG_OPLUS_FEATURE_ABNORMAL_FLAG — both separate features.
+	 */
 }
 
 static void sa_migrate_queued_task(void *data, struct rq *rq,
@@ -122,21 +181,58 @@ static void sa_migrate_queued_task(void *data, struct rq *rq,
 				   struct task_struct *p,
 				   int new_cpu, int *detached)
 {
-	/* TODO: sched_assist_migrate_queued_task() */
+	/*
+	 * Call chain: load_balance() → detach_tasks() → detach_task() → hook
+	 * Hook: fair.c:7973 — trace_android_rvh_migrate_queued_task(rq, rf, p, dst_cpu, &detached)
+	 *
+	 * Hook fires BEFORE deactivate_task() and set_task_cpu().
+	 * If handler sets *detached = 1, function skips default detach logic.
+	 * Note: hook may temporarily drop rq lock (rq_unpin_lock).
+	 *
+	 * Default: *detached = 0 (caller initializes before hook).
+	 *
+	 * 4.19 detach_task()/detach_one_task() have no OPLUS_FEATURE_SCHED_ASSIST
+	 * modification. No action needed — handler kept as registered hook placeholder.
+	 */
 }
 
 static void sa_newidle_balance(void *data, struct rq *this_rq,
 			       struct rq_flags *rf, int *pulled_task,
 			       int *done)
 {
-	/* TODO: sched_assist_newidle_balance() */
+	/*
+	 * Call chain: schedule() → pick_next_task() → newidle_balance() → hook
+	 * Hook: fair.c:10931 — trace_android_rvh_sched_newidle_balance(this_rq, rf, &pulled_task, &done)
+	 *
+	 * Hook fires FIRST, before the main load balance loop.
+	 * If handler sets *done = 1, function returns immediately with *pulled_task.
+	 * If handler sets *pulled_task > 0, caller treats as "pulled a task".
+	 *
+	 * Default: *pulled_task = 0, *done = 0 (caller initializes before hook).
+	 *
+	 * 4.19 idle_balance() has no OPLUS_FEATURE_SCHED_ASSIST modification.
+	 * No action needed — handler kept as registered hook placeholder.
+	 */
 }
 
 static void sa_find_busiest_group(void *data,
 				  struct sched_group *busiest,
 				  struct rq *dst_rq, int *out_balance)
 {
-	/* TODO: sched_assist_find_busiest_group() */
+	/*
+	 * Call chain: load_balance() → find_busiest_group() → hook
+	 * Hook: fair.c:9555 — trace_android_rvh_find_busiest_group(busiest, dst_rq, &out_balance)
+	 *
+	 * Hook fires AFTER update_sd_lb_stats() computes statistics.
+	 * Only in EAS path (sched_energy_enabled()).
+	 * If handler sets *out_balance = 0, function jumps to out_balanced
+	 * (no balancing needed).
+	 *
+	 * Default: *out_balance = 1 (caller initializes before hook).
+	 *
+	 * 4.19 find_busiest_group() has no OPLUS_FEATURE_SCHED_ASSIST modification.
+	 * No action needed — handler kept as registered hook placeholder.
+	 */
 }
 
 static void sa_find_busiest_queue(void *data, int dst_cpu,
@@ -144,7 +240,19 @@ static void sa_find_busiest_queue(void *data, int dst_cpu,
 				  struct cpumask *env_cpus,
 				  struct rq **busiest, int *done)
 {
-	/* TODO: sched_assist_find_busiest_queue() */
+	/*
+	 * Call chain: load_balance() → find_busiest_queue() → hook
+	 * Hook: fair.c:9679 — trace_android_rvh_find_busiest_queue(dst_cpu, group, env_cpus, &busiest, &done)
+	 *
+	 * Hook fires FIRST, before the CPU scan loop.
+	 * If handler sets *done = 1, function returns immediately with *busiest.
+	 * If handler sets *busiest to a specific rq, that's the result.
+	 *
+	 * Default: *busiest = NULL, *done = 0 (caller initializes before hook).
+	 *
+	 * 4.19 find_busiest_queue() has no OPLUS_FEATURE_SCHED_ASSIST modification.
+	 * No action needed — handler kept as registered hook placeholder.
+	 */
 }
 
 /* ─── core.c hooks ──────────────────────────────────────────── */
