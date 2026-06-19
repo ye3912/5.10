@@ -25,10 +25,8 @@
 #define OHM_SCHED_TOTAL		12
 
 /* cgroup IDs for healthinfo — matches 4.19 healthinfo.h */
+/* SA_CGROUP_DEFAULT/FOREGROUND/BACKGROUND/TOP_APP defined in sched_assist_common.h */
 #define SA_CGROUP_SYS_BACKGROUND	1
-#define SA_CGROUP_FOREGROUND		2
-#define SA_CGROUP_BACKGROUND		3
-#define SA_CGROUP_TOP_APP		4
 #define SA_CGROUP_UX			9
 
 struct sched_stat_common {

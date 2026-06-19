@@ -49,6 +49,18 @@
 #endif
 #include <linux/sched/walt.h>
 #define get_oplus_task_struct(t) ((struct walt_task_struct *)(t)->android_vendor_data1)
+
+#ifndef OPLUS_NR_CPUS
+#define OPLUS_NR_CPUS (8)
+#endif
+struct task_record {
+#define RECOED_WINSIZE		(1 << 8)
+#define RECOED_WINIDX_MASK	(RECOED_WINSIZE - 1)
+	u8 winidx;
+	u8 count;
+	u8 top_app_cnt;
+	u8 non_topapp_cnt;
+};
 #if IS_ENABLED(CONFIG_JANK_DEBUG)
 #define JANK_DEBUG
 #define JANK_SYSTRACE_DEBUG
