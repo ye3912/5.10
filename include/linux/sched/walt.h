@@ -163,6 +163,22 @@ struct walt_task_struct {
 	struct task_info	oplus_task_info;
 #endif
 #endif /* CONFIG_OPLUS_FEATURE_SCHED_ASSIST */
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+	/*
+	 * Hot-thread per-task tracking. 4.19 added task_record to task_struct.
+	 * 5.10 GKI cannot modify task_struct; lives in vendor data space.
+	 * Access via get_oplus_task_struct(t)->record from osi_base.h.
+	 */
+#define OPLUS_NR_CPUS (8)
+	struct task_record {
+#define RECOED_WINSIZE		(1 << 8)
+#define RECOED_WINIDX_MASK	(RECOED_WINSIZE - 1)
+		u8 winidx;
+		u8 count;
+		u8 top_app_cnt;
+		u8 non_topapp_cnt;
+	} record[3]; /* one per cluster */
+#endif
 #if IS_ENABLED(CONFIG_OPLUS_FEATURE_FRAME_BOOST)
 	/*
 	 * OPLUS frame_boost per-task state. In 4.19 these were direct

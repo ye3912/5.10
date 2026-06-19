@@ -94,7 +94,7 @@ int find_in_plist(struct task_struct *p,  struct task_struct *ots)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 int insert_hot_thread(struct task_struct *ots, struct task_struct *p, u32 now_idx)
 #else
-int insert_hot_thread(struct oplus_task_struct *ots, struct task_struct *p, u32 now_idx)
+int insert_hot_thread(struct walt_task_struct *ots, struct task_struct *p, u32 now_idx)
 #endif
 {
 	struct hot_thread_node  *hot_thread_node;
@@ -213,7 +213,7 @@ void jank_hotthread_update_tick(struct task_struct *p, u64 now)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 	struct task_struct *ots;
 #else
-	struct oplus_task_struct *ots;
+	struct walt_task_struct *ots;
 #endif
 
 	u64 timestamp, timestamp_prewin;

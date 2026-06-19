@@ -46,8 +46,9 @@
 #endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 #define PROC_NUMBUF 13
-#define get_oplus_task_struct(t) (t)
 #endif
+#include <linux/sched/walt.h>
+#define get_oplus_task_struct(t) ((struct walt_task_struct *)(t)->android_vendor_data1)
 #if IS_ENABLED(CONFIG_JANK_DEBUG)
 #define JANK_DEBUG
 #define JANK_SYSTRACE_DEBUG
@@ -59,11 +60,7 @@
 #define jank_dbg(fmt, args...)
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 #include <linux/sched_assist/sched_assist_common.h>
-#else
-#include "../sched_assist/sa_common.h"
-#endif
 #ifdef JANK_USE_HOOK
 #include <trace/hooks/sched.h>
 #include <trace/hooks/dtask.h>

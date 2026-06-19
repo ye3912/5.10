@@ -719,7 +719,7 @@ void osi_scheduler_tick_handler(void *unused, struct rq *rq)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 	struct task_struct *ots = rq->curr;
 #else
-	struct oplus_task_struct *ots = get_oplus_task_struct(rq->curr);
+	struct walt_task_struct *ots = get_oplus_task_struct(rq->curr);
 #endif
 	unsigned int limit;
 	if (!ots)
