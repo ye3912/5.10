@@ -46,7 +46,7 @@ void update_cpu_mask(void)
 			cpumask_clear_cpu(cpu, &gold_cpu);
 	}
 	cpumask_andnot(&silver_cpu, &all_cpu, &gold_cpu);
-	pr_info("cpu_highcap_mask:%x, %x, %x\n", cpumask_bits(&all_cpu)[0],
+	pr_info("cpu_highcap_mask:%lx, %lx, %lx\n", cpumask_bits(&all_cpu)[0],
 		cpumask_bits(&silver_cpu)[0], cpumask_bits(&gold_cpu)[0]);
 }
 
