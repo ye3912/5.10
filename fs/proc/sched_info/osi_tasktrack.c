@@ -15,6 +15,10 @@
 #include "osi_tasktrack.h"
 #include "osi_topology.h"
 
+#if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
+jank_callback_t jank_update_task_status;
+#endif
+
 #if IS_ENABLED(CONFIG_JANK_CPUSET)
 #include "osi_cpuset.h"
 #endif
