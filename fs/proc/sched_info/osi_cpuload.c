@@ -1056,7 +1056,7 @@ void jank_group_ratio_show(struct seq_file *m, u32 win_idx, u64 now)
 				rlt_top += avg_topapp[i];
 			}
 		}
-		seq_printf(m, "%d %d %d %d ",
+		seq_printf(m, "%lld %lld %lld %lld ",
 			rlt_df/cpu_nr, rlt_fg/cpu_nr, rlt_bg/cpu_nr, rlt_top/cpu_nr);
 	}
 }
@@ -1177,7 +1177,7 @@ void jank_busy_ratio_show(struct seq_file *m, u32 win_idx, u64 now)
 			else
 				result += avg[i];
 		}
-		seq_printf(m, "%d ", result/(end_cpu-start_cpu+1));
+		seq_printf(m, "%lld ", result/(end_cpu-start_cpu+1));
 	}
 }
 
