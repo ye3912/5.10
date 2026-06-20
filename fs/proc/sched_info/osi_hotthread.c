@@ -11,6 +11,7 @@
 #include <linux/sort.h>
 #include <linux/completion.h>
 #include <uapi/linux/sched/types.h>
+#include <linux/sched/walt.h>
 
 #include "osi_hotthread.h"
 #include "osi_topology.h"
@@ -65,7 +66,7 @@ ins_node:
 	list_add_tail(&node->node_list, node_next);
 }
 
-int find_in_plist(struct task_struct *p,  struct task_struct *ots)
+int find_in_plist(struct task_struct *p, void *ots)
 {
 	struct hot_thread_node *tmp;
 	bool is_find = false;
@@ -94,7 +95,7 @@ int find_in_plist(struct task_struct *p,  struct task_struct *ots)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 int insert_hot_thread(struct task_struct *ots, struct task_struct *p, u32 now_idx)
 #else
-int insert_hot_thread(struct walt_task_struct *ots, struct task_struct *p, u32 now_idx)
+int insert_hot_thread(void *ots, struct task_struct *p, u32 now_idx)
 #endif
 {
 	struct hot_thread_node  *hot_thread_node;
