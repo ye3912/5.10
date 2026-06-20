@@ -11,6 +11,14 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wunused-variable"
+/*
+ * cpu_util_rt() is defined in kernel/sched/sched.h and included via walt.h.
+ * The trace TRACE_HEADER_MULTI_READ mechanism causes sched.h's include guard
+ * to fail for relative-path includes, leading to "implicit declaration" in
+ * TP_fast_assign blocks. Suppress this warning — the function IS available
+ * at link time. This is NOT a missing dependency; it's a trace include bug.
+ */
+#pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM schedwalt
@@ -19,7 +27,6 @@
 #define _TRACE_WALT_H
 
 #include <linux/tracepoint.h>
-#include "../../../kernel/sched/sched.h"
 
 #include "walt.h"
 
