@@ -220,7 +220,7 @@ static struct genl_family oplus_cpuload_genl_family = {
 void create_cpu_netlink(int unused)
 {
 	if (genl_register_family(&oplus_cpuload_genl_family) != 0)
-		pr_err("cpu_netlink: genl_register_family error!\n", __func__);
+		pr_err("cpu_netlink: genl_register_family error!\n");
 }
 
 void destroy_cpu_netlink(void)
