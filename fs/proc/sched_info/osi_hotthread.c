@@ -201,10 +201,11 @@ static void cal_rq_num(void)
 static struct task_record *get_task_record(struct task_struct *t,
 			u32 cluster_id)
 {
-	struct task_record *rc = NULL;
+	struct walt_task_struct *wts = get_oplus_task_struct(t);
 
-	rc = (struct task_record *) (&(get_oplus_task_struct(t)->record));
-	return (struct task_record *) (&rc[cluster_id]);
+	if (!wts || cluster_id >= 3)
+		return NULL;
+	return (struct task_record *) wts->record_data[cluster_id];
 }
 
 /* updated in each tick */

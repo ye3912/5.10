@@ -4,6 +4,12 @@
  * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  */
 
+/*
+ * WALT debug print uses generic format macros (SCHED_PRINT, WALT_BUG) that
+ * pass mixed types to %llu. Suppress format warnings for this file only.
+ */
+#pragma GCC diagnostic ignored "-Wformat"
+
 #include <linux/syscore_ops.h>
 #include <linux/cpufreq.h>
 #include <linux/list_sort.h>
@@ -12,6 +18,7 @@
 #include <linux/module.h>
 #include <linux/kmemleak.h>
 #include <linux/ktime.h>
+#include <linux/version.h>
 #include <linux/qcom-cpufreq-hw.h>
 #include <linux/cpumask.h>
 
@@ -201,7 +208,7 @@ static const unsigned int top_tasks_bitmap_size =
 
 __read_mostly unsigned int walt_scale_demand_divisor;
 
-#define SCHED_PRINT(arg)	printk_deferred("%s=%llu", #arg, arg)
+#define SCHED_PRINT(arg)	printk_deferred("%s=%llu", #arg, (unsigned long long)(arg))
 #define STRG(arg)		#arg
 
 void walt_task_dump(struct task_struct *p)
@@ -295,8 +302,8 @@ void walt_dump(void)
 
 	printk_deferred("============ WALT RQ DUMP START ==============\n");
 	printk_deferred("Sched ktime_get: %llu\n", walt_ktime_get_ns());
-	printk_deferred("Time last window changed=%lu\n",
-			sched_ravg_window_change_time);
+	printk_deferred("Time last window changed=%llu\n",
+			(unsigned long long)sched_ravg_window_change_time);
 	for_each_online_cpu(cpu)
 		walt_rq_dump(cpu);
 	SCHED_PRINT(max_possible_capacity);
@@ -2719,7 +2726,7 @@ static void walt_update_cluster_topology(void)
 					     policy->related_cpus);
 			}
 			cpuinfo_max_freq_cached = (cpuinfo_max_freq_cached >
-			policy->cpuinfo.max_freq) ?: policy->cpuinfo.max_freq;
+			policy->cpuinfo.max_freq) ? cpuinfo_max_freq_cached : policy->cpuinfo.max_freq;
 		}
 	}
 
@@ -4530,11 +4537,13 @@ static void walt_init(struct work_struct *work)
 	walt_boost_init();
 	waltgov_register();
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0)
 	i = match_string(sched_feat_names, __SCHED_FEAT_NR, "TTWU_QUEUE");
 	if (i >= 0) {
 		static_key_disable(&sched_feat_keys[i]);
 		sysctl_sched_features &= ~(1UL << i);
 	}
+#endif
 }
 
 static DECLARE_WORK(walt_init_work, walt_init);

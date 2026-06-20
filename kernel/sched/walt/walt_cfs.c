@@ -4,6 +4,8 @@
  * Copyright (c) 2022-2024, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
+#pragma GCC diagnostic ignored "-Wformat"
+
 #include <trace/hooks/sched.h>
 #include <trace/hooks/binder.h>
 

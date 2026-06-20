@@ -49,8 +49,6 @@ struct walt_related_thread_group {
 	u64			start_ktime_ts;
 };
 
-struct task_record; /* forward declaration — defined in fs/proc/sched_info/osi_base.h */
-
 struct walt_task_struct {
 	/*
 	 * 'mark_start' marks the beginning of an event (task waking up, task
@@ -166,7 +164,7 @@ struct walt_task_struct {
 #endif
 #endif /* CONFIG_OPLUS_FEATURE_SCHED_ASSIST */
 #if IS_ENABLED(CONFIG_OPLUS_FEATURE_CPU_JANKINFO)
-	struct task_record record[3]; /* hot-thread per-cluster tracking */
+	void *record_data[3]; /* hot-thread per-cluster tracking (struct task_record *) */
 #endif
 #if IS_ENABLED(CONFIG_OPLUS_FEATURE_FRAME_BOOST)
 	/*
