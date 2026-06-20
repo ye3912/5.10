@@ -4,6 +4,14 @@
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
+/*
+ * WALT tracepoint format strings have type mismatches on 5.10 (u32 vs u64).
+ * Suppress format warnings for this header.
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM schedwalt
 
@@ -17,6 +25,11 @@
 struct rq;
 struct group_cpu_time;
 struct walt_task_struct;
+
+/* Stub for cpu_util_rt when CONFIG_CPU_FREQ_GOV_SCHEDUTIL is not enabled */
+#ifndef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+static inline unsigned long cpu_util_rt(struct rq *rq) { return 0; }
+#endif
 struct walt_rq;
 struct walt_related_thread_group;
 
@@ -1352,3 +1365,5 @@ TRACE_EVENT(update_cpu_capacity,
 #define TRACE_INCLUDE_FILE trace
 
 #include <trace/define_trace.h>
+
+#pragma GCC diagnostic pop
