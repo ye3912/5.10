@@ -218,16 +218,16 @@ static int jank_unit_test(char *buf)
 			break;
 
 		pd_mask = perf_domain_span(pd);
-		pr_info("DEBUG BYHP0: cpu=%d, 0x=%x, pd_mask=[%*pbl]\n",
+		pr_info("DEBUG BYHP0: cpu=%d, 0x=%px, pd_mask=[%*pbl]\n",
 						cpu, pd, cpumask_pr_args(pd_mask));
 
 		for (; pd; pd = pd->next) {
 			pd_mask = perf_domain_span(pd);
-			pr_info("DEBUG BYHP1: cpu=%d, 0x=%x, pd_mask=[%*pbl]\n",
+			pr_info("DEBUG BYHP1: cpu=%d, 0x=%px, pd_mask=[%*pbl]\n",
 				cpu, pd, cpumask_pr_args(pd_mask));
 		}
 
-		pr_info("DEBUG BYHP2: cpu=%d, 0x=%x, pd_mask=[%*pbl]\n",
+		pr_info("DEBUG BYHP2: cpu=%d, 0x=%px, pd_mask=[%*pbl]\n",
 				cpu, pd, cpumask_pr_args(pd_mask));
 		break;
 	case 2:
