@@ -777,7 +777,7 @@ static void osi_notify_cpuset(bool is_inital)
 	css_for_each_descendant_pre(child_css, cpuset_css) {
 		grp_mask = (struct cpumask *)((unsigned long long)child_css + sizeof(struct cgroup_subsys_state)
 			+ sizeof(unsigned long) + sizeof(cpumask_var_t));
-		osi_debug("child css id: %d, %s, mask:%*pbl, %llx", child_css->id, child_css->cgroup->kn->name,
+		osi_debug("child css id: %d, %s, mask:%*pbl, %lx", child_css->id, child_css->cgroup->kn->name,
 			 cpumask_pr_args(grp_mask), cpumask_bits(grp_mask)[0]);
 		if (!strcmp(child_css->cgroup->kn->name, "l-background"))
 			cpumask_lbg = cpumask_bits(grp_mask)[0];
