@@ -1276,7 +1276,7 @@ static int proc_sched_latency_show(struct seq_file *m, void *v)
 
 	for (i = 0; i < LATENCY_TRACK_NUM; i++) {
 		cur = &lantency_struct[i];
-		seq_printf(m, "%d,%lu,%llu.%lu\n", cur->pid, cur->delta, (u64)cur->time_stamp.tv_sec,
+		seq_printf(m, "%d,%llu,%llu.%lu\n", cur->pid, cur->delta, (u64)cur->time_stamp.tv_sec,
 			cur->time_stamp.tv_nsec);
 	}
 	seq_puts(m, "\n");
@@ -1290,7 +1290,7 @@ static int proc_sched_iowait_show(struct seq_file *m, void *v)
 
 	for (i = 0; i < LATENCY_TRACK_NUM; i++) {
 		cur = &iowait_struct[i];
-		seq_printf(m, "%d,%lu,%llu.%lu\n", cur->pid, cur->delta, (u64)cur->time_stamp.tv_sec,
+		seq_printf(m, "%d,%llu,%llu.%lu\n", cur->pid, cur->delta, (u64)cur->time_stamp.tv_sec,
 			cur->time_stamp.tv_nsec);
 	}
 	seq_puts(m, "\n");
@@ -1304,9 +1304,9 @@ static int proc_ux_throttle_show(struct seq_file *m, void *v)
 
 	for (i = 0; i < THROTTLE_TRACK_NUM; i++) {
 		cur = &ux_throttle_struct[i];
-		seq_printf(m, "%d,%s,%lu.%lu,%d,", cur->pid, cur->comm, (u64)cur->time_stamp.tv_sec,
+		seq_printf(m, "%d,%s,%llu.%lu,%d,", cur->pid, cur->comm, (u64)cur->time_stamp.tv_sec,
 			cur->time_stamp.tv_nsec, cur->core_id);
-		seq_printf(m, "%lu,%lu\n", cur->freq, cur->max_freq);
+		seq_printf(m, "%u,%u\n", cur->freq, cur->max_freq);
 	}
 	seq_puts(m, "\n");
 	return 0;
