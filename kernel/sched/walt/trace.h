@@ -19,6 +19,7 @@
 #define _TRACE_WALT_H
 
 #include <linux/tracepoint.h>
+#include <linux/sched/sched.h>
 
 #include "walt.h"
 

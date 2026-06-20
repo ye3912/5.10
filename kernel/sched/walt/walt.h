@@ -921,7 +921,9 @@ void walt_cfs_tick(struct rq *rq);
 void walt_lb_tick(struct rq *rq);
 
 extern __read_mostly unsigned int walt_scale_demand_divisor;
+#ifndef scale_demand
 #define scale_demand(d) ((d)/walt_scale_demand_divisor)
+#endif
 
 #define ASYMCAP_BOOST(cpu)	(sysctl_sched_asymcap_boost && !is_min_capacity_cpu(cpu))
 
