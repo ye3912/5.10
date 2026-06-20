@@ -4505,7 +4505,9 @@ static void walt_init(struct work_struct *work)
 {
 	struct ctl_table_header *hdr;
 	static atomic_t already_inited = ATOMIC_INIT(0);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0)
 	int i;
+#endif
 
 	might_sleep();
 
