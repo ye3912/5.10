@@ -148,7 +148,9 @@ extern unsigned int walt_scale_demand_divisor;
 extern unsigned int walt_ravg_window;
 #define walt_scale_demand_divisor  (walt_ravg_window >> SCHED_CAPACITY_SHIFT)
 #endif
+#ifndef scale_demand
 #define scale_demand(d) ((d) / walt_scale_demand_divisor)
+#endif
 
 #ifdef CONFIG_OPLUS_FEATURE_SCHED_SPREAD
 struct task_count_rq {

@@ -12,6 +12,12 @@
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wunused-variable"
 
+/* Stub for cpu_util_rt when CONFIG_CPU_FREQ_GOV_SCHEDUTIL is not enabled */
+#ifndef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+struct rq;
+static inline unsigned long cpu_util_rt(struct rq *rq) { return 0; }
+#endif
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM schedwalt
 
@@ -25,11 +31,6 @@
 struct rq;
 struct group_cpu_time;
 struct walt_task_struct;
-
-/* Stub for cpu_util_rt when CONFIG_CPU_FREQ_GOV_SCHEDUTIL is not enabled */
-#ifndef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-static inline unsigned long cpu_util_rt(struct rq *rq) { return 0; }
-#endif
 struct walt_rq;
 struct walt_related_thread_group;
 
