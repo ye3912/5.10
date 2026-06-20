@@ -222,7 +222,7 @@ struct pid_stat_mgr g_pid_stat_mgt[HIGH_LOAD_MAX_TYPE] = { 0 };
 
 void cpuset_bg_cpumask(unsigned long bits)
 {
-	osi_debug("cpuload:bg cpumask bits:0x%x", bits);
+	osi_debug("cpuload:bg cpumask bits:0x%lx", bits);
 	cpumask_bg = bits;
 }
 
@@ -717,7 +717,7 @@ static void reset_action_data(void)
 
 	action_ctl_struct.bits_high = 0;
 	action_ctl_struct.bits_mid = 0;
-	memset(action_ctl_struct.usage_percent, 0, ARRAY_SIZE(action_ctl_struct.usage_percent));
+	memset(action_ctl_struct.usage_percent, 0, sizeof(action_ctl_struct.usage_percent));
 }
 
 void check_lowload(void)
@@ -777,7 +777,7 @@ static void osi_notify_cpuset(bool is_inital)
 	css_for_each_descendant_pre(child_css, cpuset_css) {
 		grp_mask = (struct cpumask *)((unsigned long long)child_css + sizeof(struct cgroup_subsys_state)
 			+ sizeof(unsigned long) + sizeof(cpumask_var_t));
-		osi_debug("child css id: %d, %s, mask:%*pbl, %x", child_css->id, child_css->cgroup->kn->name,
+		osi_debug("child css id: %d, %s, mask:%*pbl, %llx", child_css->id, child_css->cgroup->kn->name,
 			 cpumask_pr_args(grp_mask), cpumask_bits(grp_mask)[0]);
 		if (!strcmp(child_css->cgroup->kn->name, "l-background"))
 			cpumask_lbg = cpumask_bits(grp_mask)[0];
@@ -788,7 +788,7 @@ static void osi_notify_cpuset(bool is_inital)
 			cpumask_hfg = cpumask_bits(&hfg_mask)[0];
 		}
 	}
-	osi_debug("update cpumask_lbg:%x, cpumask_hbg:%x, cpumask_hfg:%x",
+	osi_debug("update cpumask_lbg:%lx, cpumask_hbg:%lx, cpumask_hfg:%lx",
 			cpumask_lbg, cpumask_hbg, cpumask_hfg);
 }
 
@@ -968,7 +968,7 @@ bool high_load_tick(void)
 	if (check_statistics >= 60) {
 		check_statistics = 0;
 		send_to_user(HISTORY_TOTAL_LOADS, ARRAY_SIZE(sample_load_array), sample_load_array);
-		memset(sample_load_array, 0,  ARRAY_SIZE(sample_load_array));
+		memset(sample_load_array, 0, sizeof(sample_load_array));
 	}
 
 	if (check_intervals >= CPU_LOAD_TIMER_RATE) {
@@ -1386,7 +1386,7 @@ static ssize_t proc_clm_enable_read(struct file *file,
 	char buffer[PROC_NUMBUF];
 	size_t len = 0;
 
-	len = snprintf(buffer, sizeof(buffer), "%d\n", high_load_switch);
+	len = snprintf(buffer, sizeof(buffer), "%lu\n", high_load_switch);
 	return simple_read_from_buffer(buf, count, ppos, buffer, len);
 }
 
