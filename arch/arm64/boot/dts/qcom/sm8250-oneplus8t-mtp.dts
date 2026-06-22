@@ -2259,8 +2259,8 @@
 		dhall,id = <2>;
 		vdd-supply = <&pm8150a_l10>;
 		interrupt-parent = <&tlmm>;
-		interrups = <158 0x02>;
-		dhall,irq-gpio = <&tlmm 158 0x2008>;
+		interrups = <138 0x02>;
+		dhall,irq-gpio = <&tlmm 138 0x2008>;
 		pinctrl-names = "downhall_tri_state_key_active";
 		pinctrl-0 = <&downhall_tri_state_key_active>;
 	};
@@ -2304,11 +2304,11 @@
 	};
 	downhall_tri_state_key_active: downhall_tri_state_key_active {
 		mux {
-			pins = "gpio158";
+			pins = "gpio138";
 			function = "gpio";
 		};
 		config {
-			pins = "gpio158";
+			pins = "gpio138";
 			drive-strength = <2>;
 			bias-pull-up;
 		};
