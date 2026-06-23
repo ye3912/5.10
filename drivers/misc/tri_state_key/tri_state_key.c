@@ -236,10 +236,9 @@ static ssize_t proc_tri_state_read(struct file *file, char __user *user_buf,
 	return ret;
 }
 
-static const struct file_operations proc_tri_state_ops = {
-	.read  = proc_tri_state_read,
-	.open  = simple_open,
-	.owner = THIS_MODULE,
+static const struct proc_ops proc_tri_state_ops = {
+	.proc_read  = proc_tri_state_read,
+	.proc_open  = simple_open,
 };
 
 static int init_trikey_proc(struct trikey_dev_data *trikey_data)
