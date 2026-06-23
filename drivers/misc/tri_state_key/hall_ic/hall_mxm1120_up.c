@@ -946,14 +946,24 @@ static int tri_key_m1120_i2c_drv_probe(struct i2c_client *client, const struct i
 	if (gpio_is_valid(p_data->irq_gpio)) {
 		err = gpio_request(p_data->irq_gpio, "m1120_up_irq");
 		if (err) {
-			TRI_KEY_LOG("unable to request gpio [%d]", p_data->irq_gpio);
-		} else {
-			err = gpio_direction_input(p_data->irq_gpio);
-			msleep(50);
-			p_data->irq = gpio_to_irq(p_data->irq_gpio);
-			TRI_KEY_LOG("======> irq : %d", p_data->irq);
+			TRI_KEY_ERR("unable to request gpio [%d] ret=%d\n", p_data->irq_gpio, err);
+			goto error_1;
 		}
-
+		err = gpio_direction_input(p_data->irq_gpio);
+		if (err) {
+			TRI_KEY_ERR("gpio_direction_input failed ret=%d\n", err);
+			gpio_free(p_data->irq_gpio);
+			goto error_1;
+		}
+		msleep(50);
+		p_data->irq = gpio_to_irq(p_data->irq_gpio);
+		if (p_data->irq < 0) {
+			TRI_KEY_ERR("gpio_to_irq failed irq=%d\n", p_data->irq);
+			gpio_free(p_data->irq_gpio);
+			err = p_data->irq;
+			goto error_1;
+		}
+		TRI_KEY_LOG("======> irq : %d", p_data->irq);
 	}
 
 	err = m1120_power_init(p_data);

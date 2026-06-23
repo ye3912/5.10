@@ -605,13 +605,23 @@ static int ist8801_setup_eint(struct ist8801_data_t *ist8801_data)
 
 	if (gpio_is_valid(ist8801_data->irq_gpio)) {
 		ret = gpio_request(ist8801_data->irq_gpio, "ist8801_up_irq");
-		if (ret)
-			TRI_KEY_LOG("unable to request gpio [%d]\n",
-			ist8801_data->irq_gpio);
-		else {
-			ret = gpio_direction_input(ist8801_data->irq_gpio);
-			msleep(50);
-			ist8801_data->irq = gpio_to_irq(ist8801_data->irq_gpio);
+		if (ret) {
+			TRI_KEY_ERR("unable to request gpio [%d] ret=%d\n",
+				ist8801_data->irq_gpio, ret);
+			return ret;
+		}
+		ret = gpio_direction_input(ist8801_data->irq_gpio);
+		if (ret) {
+			TRI_KEY_ERR("gpio_direction_input failed ret=%d\n", ret);
+			gpio_free(ist8801_data->irq_gpio);
+			return ret;
+		}
+		msleep(50);
+		ist8801_data->irq = gpio_to_irq(ist8801_data->irq_gpio);
+		if (ist8801_data->irq < 0) {
+			TRI_KEY_ERR("gpio_to_irq failed irq=%d\n", ist8801_data->irq);
+			gpio_free(ist8801_data->irq_gpio);
+			return ist8801_data->irq;
 		}
 	}
 	TRI_KEY_ERR("GPIO %d irq:%d\n", ist8801_data->irq_gpio,
