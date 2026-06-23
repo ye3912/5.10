@@ -1174,7 +1174,8 @@ static ssize_t proc_hall_debug_info_write(struct file *file, const char __user *
 
 	if (count > 2)
 		return count;
-	copy_from_user(buf, buffer, count);
+	if (copy_from_user(buf, buffer, count))
+		return -EFAULT;
 	if (!kstrtoint(buf, 0, &tmp))
 		tri_key_debug = tmp;
 	else
@@ -1356,8 +1357,7 @@ int oplus_register_hall(const char *name, struct dhall_operations *ops,
 	struct extcon_dev_data *hall_dev = hall_dev_t;
 
 	if (!name || !ops) {
-		TRI_KEY_ERR("name is NULL or ops is NULL,",
-			"would not register digital hall\n");
+		TRI_KEY_ERR("name is NULL or ops is NULL, would not register digital hall\n");
 		return -EINVAL;
 	}
 
