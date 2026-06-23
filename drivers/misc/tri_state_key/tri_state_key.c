@@ -258,7 +258,7 @@ static int init_trikey_proc(struct trikey_dev_data *trikey_data)
 	prEntry_tmp = proc_create("tri_state", 0644, prEntry_trikey, &proc_tri_state_ops);
 	if (prEntry_tmp == NULL) {
 		ret = -ENOMEM;
-		TRI_KEY_ERR("Couldn't create proc entry, %d\n");
+		TRI_KEY_ERR("Couldn't create proc entry, %d\n", __LINE__);
 	}
 
 	return ret;

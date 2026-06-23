@@ -359,7 +359,7 @@ static int ist8801_set_power(struct ist8801_data_t *ist8801_data, bool on)
 			ret = regulator_set_voltage(ist8801_data->power_2v8,
 					2856000, 3104000);
 			if (ret) {
-				TRI_KEY_LOG("Regulator failed vdd\n", ret);
+				TRI_KEY_LOG("Regulator failed vdd ret=%d\n", ret);
 				return ret;
 			}
 
@@ -829,9 +829,8 @@ static int ist8801_reset_device(struct ist8801_data_t *ist8801_data)
 		return err;
 	}
 	if (data != IST8801_VAL_DID) {
-		TRI_KEY_ERR("current device id(0x%02X)", data,
-			"is not IST8801 device id(0x%02X)",
-			 IST8801_VAL_DID);
+		TRI_KEY_ERR("current device id(0x%02X) is not IST8801 device id(0x%02X)\n",
+			 data, IST8801_VAL_DID);
 	}
 
 	data = 0x04;
@@ -1016,9 +1015,8 @@ static int ist8801_i2c_probe(struct i2c_client *client,
 
 	dev_id = ist8801_get_id(p_data);
 	if (dev_id != IST8801_VAL_DID) {
-		TRI_KEY_ERR("current device id(0x%02x)", dev_id,
-			"is not ist8801 device id(0x%02x)\n",
-			IST8801_VAL_DID);
+		TRI_KEY_ERR("current device id(0x%02x) is not ist8801 device id(0x%02x)\n",
+			 dev_id, IST8801_VAL_DID);
 		goto fail;
 	}
 
