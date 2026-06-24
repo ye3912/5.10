@@ -213,6 +213,7 @@ jobs:
           path: |
             .config
             build.log
+            vmlinux
             arch/arm64/boot/dts/qcom/${{ matrix.dtb }}
             arch/arm64/boot/dts/oplus/kona-kebab.dtbo
           retention-days: 30
