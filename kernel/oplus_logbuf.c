@@ -75,9 +75,16 @@ int oplus_logbuf_init(phys_addr_t phys, size_t size)
 
 	data_size = size - sizeof(*hdr);
 
-	hdr = memremap(phys, size, MEMREMAP_WB);
+	if (!request_mem_region(phys, size, "oplus_logbuf")) {
+		pr_err("oplus_logbuf: request_mem_region(%pa, %zu) failed\n",
+			&phys, size);
+		return -EBUSY;
+	}
+
+	hdr = ioremap_wc(phys, size);
 	if (!hdr) {
-		pr_err("oplus_logbuf: memremap(%pa, %zu) failed\n", &phys, size);
+		pr_err("oplus_logbuf: ioremap_wc(%pa, %zu) failed\n", &phys, size);
+		release_mem_region(phys, size);
 		return -ENOMEM;
 	}
 
@@ -311,7 +318,7 @@ static int __init oplus_logbuf_module_init(void)
 
 /*
  * Run early so the console is registered before most driver probe output,
- * but after memremap is available.
+ * but after ioremap is available.
  */
 subsys_initcall(oplus_logbuf_module_init);
 
