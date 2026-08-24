@@ -28,9 +28,11 @@
 /delete-node/ &wlan_mem;
 /delete-node/ &ipa_fw_mem;
 /delete-node/ &ipa_gsi_mem;
+/delete-node/ &gpu_mem;
 /delete-node/ &npu_mem;
 /delete-node/ &video_mem;
 /delete-node/ &cvp_mem;
+/delete-node/ &slpi_mem;
 
 / {
 	aliases {
@@ -84,7 +86,7 @@
 			reg = <0x0 0x8e210000 0x0 0xa000>;
 		};
 
-		pil_gpu_mem: gpu_mem: pil_gpu_region@8e21a000 {
+		gpu_mem: memory@8e21a000 {
 			no-map;
 			reg = <0x0 0x8e21a000 0x0 0x2000>;
 		};
@@ -110,7 +112,7 @@
 			reg = <0x0 0x8f200000 0x0 0x1400000>;
 		};
 
-		pil_slpi_mem: slpi_mem: pil_slpi_region@90600000 {
+		slpi_mem: memory@90600000 {
 			no-map;
 			reg = <0x0 0x90600000 0x0 0x1500000>;
 		};
